@@ -2,7 +2,7 @@
 <title>Fernão · Da tempestade à praia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* Teste de transição: dois planos 180° com HUD da série. Mundo único, escuro (o olhar do Fernão). */
 :root{
@@ -15,7 +15,7 @@
   --serif:'Spectral',Georgia,'Times New Roman',serif;
   --caps:'Cinzel','Trajan Pro',Georgia,serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
-  --bd:'Patrick Hand','Comic Neue','Chalkboard SE','Marker Felt',cursive;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   color-scheme:dark;
 }
 html,body{height:100%}
@@ -45,12 +45,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   padding:calc(16px + env(safe-area-inset-top,0px)) 20px 0}
 .serie{display:flex;flex-direction:column;gap:6px;min-width:0}
 .serie .nome{font-family:var(--caps);font-weight:700;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--papel)}
-.serie .ep{font-family:var(--mono);font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--papel-fraco)}
+.serie .ep{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--papel-fraco)}
 .serie .ep b{color:var(--lanterna);font-weight:500}
 .dir{display:flex;gap:8px;align-items:center;pointer-events:auto}
-.lugar{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--papel);text-shadow:0 1px 8px #000;text-align:right;padding-right:6px;line-height:1.6}
-.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--papel);
-  background:rgba(8,11,17,.6);border:1px solid rgba(233,227,213,.4);padding:9px 12px;min-height:38px;cursor:pointer;border-radius:2px;
+.lugar{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--papel-fraco);text-align:right;padding-right:6px;line-height:1.6}
+.btn{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--papel);
+  background:rgba(8,11,17,.45);border:1px solid rgba(154,166,176,.28);padding:7px 10px;cursor:pointer;border-radius:2px;
   -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .btn:hover{border-color:var(--lanterna);color:var(--lanterna)}
 .btn[aria-pressed="true"]{border-color:rgba(227,164,76,.6);color:var(--lanterna)}
@@ -59,7 +59,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 .hud.oculto #bHud{opacity:.45}
 
 .hud .base{position:absolute;left:20px;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
-.progresso{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--papel);text-shadow:0 1px 8px #000}
+.progresso{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--papel-fraco)}
 .planos{display:flex;gap:4px}
 .planos i{display:block;width:34px;height:2px;background:rgba(154,166,176,.3)}
 .planos i.feito{background:var(--papel-fraco)}
@@ -70,42 +70,19 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 #bSeguir.pronto{background:var(--lanterna);color:var(--abismo);border-color:var(--lanterna);animation:chama 2.4s ease-in-out infinite}
 @keyframes chama{0%,100%{box-shadow:0 0 0 0 rgba(227,164,76,.0)}50%{box-shadow:0 0 0 6px rgba(227,164,76,.18)}}
 
-/* ---------- marcadores de interação: botão com ícone do que abre ---------- */
-.marca{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;pointer-events:auto;cursor:pointer;padding:0;
-  border:2px solid var(--lanterna);background:rgba(8,11,17,.72);color:var(--lanterna);opacity:0;transition:opacity .5s, transform .25s;
-  display:grid;place-items:center;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-.marca svg{width:22px;height:22px;display:block}
-.marca.on{opacity:.92;animation:pulsa 2.6s ease-in-out infinite}
-.marca.perto,.marca:hover{opacity:1;transform:scale(1.12);background:var(--lanterna);color:var(--abismo)}
+/* ---------- marcadores de interação ---------- */
+.marca{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;pointer-events:auto;cursor:pointer;padding:0;
+  border:2px solid #fff;background:rgba(8,11,17,.25);opacity:0;transition:opacity .6s, transform .3s;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.marca::before{content:"";position:absolute;inset:-9px;border-radius:50%}
+.marca::after{content:"";position:absolute;inset:8px;border-radius:50%;background:#fff}
+.marca.on{opacity:.85;animation:pulsa 2.6s ease-in-out infinite}
+.marca.perto{opacity:1;transform:scale(1.15)}
+.marca:hover{opacity:1}
 .hud.oculto .marca{opacity:0!important;pointer-events:none}
-@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(227,164,76,.45)}50%{box-shadow:0 0 0 12px rgba(227,164,76,0)}}
-.marca .tipo{position:absolute;left:50%;top:50px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--papel);white-space:nowrap;background:rgba(8,11,17,.75);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .3s}
-.marca.perto .tipo,.marca:hover .tipo{opacity:1}
-
-/* ---------- BD: balão, caixa de narração, lupa ---------- */
-#bd{position:absolute;inset:0;pointer-events:none;z-index:3}
-.bd{position:absolute;max-width:min(300px,calc(100vw - 32px));transform-origin:var(--ox,50%) var(--oy,100%);
-  animation:pop .38s cubic-bezier(.2,1.6,.4,1) both;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
-.bd.sai{animation:sai .25s ease-in both}
-@keyframes pop{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
-@keyframes sai{to{opacity:0;transform:scale(.85)}}
-.balao{background:#FBF8F1;color:#14161A;border:2.5px solid #14161A;border-radius:50% / 46%;padding:18px 24px;text-align:center;
-  font-family:var(--bd);font-size:clamp(18px,2vw,22px);line-height:1.2;letter-spacing:.01em;min-width:120px}
-.balao{position:relative}
-.balao::before,.balao::after{content:"";position:absolute;width:0;height:0;border-style:solid;border-color:transparent}
-.balao::before{left:calc(var(--cauda,50%) - 11px);bottom:-22px;border-width:22px 11px 0 11px;border-top-color:#14161A}
-.balao::after{left:calc(var(--cauda,50%) - 7.5px);bottom:-15px;border-width:16px 7.5px 0 7.5px;border-top-color:#FBF8F1}
-.balao.cima::before{bottom:auto;top:-22px;border-width:0 11px 22px 11px;border-bottom-color:#14161A;border-top-color:transparent}
-.balao.cima::after{bottom:auto;top:-15px;border-width:0 7.5px 16px 7.5px;border-bottom-color:#FBF8F1;border-top-color:transparent}
-.caixa{background:#EDE3C8;color:#1A1712;border:2px solid #1A1712;padding:10px 14px;font-family:var(--serif);font-size:clamp(15px,1.5vw,17px);
-  line-height:1.45;text-align:left}
-.caixa b{display:block;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#7A5A22;margin-bottom:4px}
-.grupo{display:flex;flex-direction:column;gap:10px;align-items:center}
-.grupo .caixa{align-self:stretch}
-.lupaBD{width:min(36vmin,200px);aspect-ratio:1;border-radius:50%;border:3px solid #14161A;box-shadow:0 0 0 3px var(--lanterna);background-repeat:no-repeat}
-.fechar{position:absolute;right:-10px;top:-10px;width:26px;height:26px;border-radius:50%;background:#14161A;color:#FBF8F1;border:0;font:600 14px/26px var(--mono);
-  text-align:center;pointer-events:auto;cursor:pointer;padding:0}
+@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.45),0 1px 6px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 10px rgba(255,255,255,0),0 1px 6px rgba(0,0,0,.5)}}
+.marca .tipo{position:absolute;left:50%;top:36px;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--papel);white-space:nowrap;opacity:0;transition:opacity .3s;text-shadow:0 1px 6px #000}
+.marca.perto .tipo,.marca:hover .tipo{opacity:.9}
 
 #retic{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;pointer-events:none;opacity:0;transition:opacity .3s}
 #retic circle{fill:none;stroke-width:1.5}
@@ -125,14 +102,18 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   transition:opacity .5s, transform .5s}
 #lupa.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
-/* ---------- legenda do narrador: caixa de narração em baixo ---------- */
-#legenda{position:absolute;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(8px);
-  width:min(38rem,calc(100% - 32px));pointer-events:none;opacity:0;transition:opacity .5s, transform .5s;
-  background:#EDE3C8;color:#1A1712;border:2px solid #1A1712;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-#legenda .quem{display:block;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.22em;color:#7A5A22;margin-bottom:4px;text-transform:uppercase}
-#legenda p{margin:0;font-family:var(--serif);font-size:clamp(16px,1.7vw,19px);line-height:1.45;text-wrap:pretty}
-#legenda.on{opacity:1;transform:translateX(-50%) translateY(0)}
-#legenda.off{opacity:0}
+/* ---------- legenda ---------- */
+#legenda{position:absolute;left:50%;bottom:calc(9vh + 36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  width:min(44rem,calc(100% - 40px));text-align:center;pointer-events:none}
+/* legendas ao estilo dos jogos: letra direita, branca, sombra ligeira */
+#legenda{opacity:0;transition:opacity .35s ease}
+#legenda.on{opacity:1}
+#legenda.off{opacity:0;transition-duration:.6s}
+#legenda .quem{display:inline;font-family:var(--sans);font-weight:700;font-size:clamp(17px,1.9vw,22px);color:var(--lanterna);margin-right:.4em;
+  text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
+#legenda .quem::after{content:":"}
+#legenda p{display:inline;margin:0;font-family:var(--sans);font-weight:500;font-size:clamp(17px,1.9vw,22px);line-height:1.4;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
 
 /* ---------- cartões ---------- */
 .cartao{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:1.3rem;padding-block:8vh;padding-inline:max(20px,8vw);
@@ -170,7 +151,8 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <div class="vin topo so-hud"></div>
   <div class="vin base"></div>
   <div id="marcas"></div>
-  <div id="bd" aria-live="polite"></div>
+  <div id="lupa"></div>
+  <div id="balao"><div></div></div>
   <svg id="retic" viewBox="0 0 46 46" aria-hidden="true"><circle class="b" cx="23" cy="23" r="19"/><circle class="p" cx="23" cy="23" r="19" stroke-dasharray="0 120"/></svg>
   <div id="legenda" aria-live="polite"><span class="quem">Fernão</span><p></p></div>
 
@@ -253,12 +235,7 @@ const PLANOS=[
    {x:.37,y:.36,r:.14,tipo:'legenda',t:'Esperávamos a monção numa ilha a que chamam dos Ladrões. Agora é só uma ilha.'}
   ]}
 ];
-const ROT={balao:'fala',pormenor:'pormenor',legenda:'ler'};
-const ICO={
- balao:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 4c5 0 9 3 9 7s-4 7-9 7c-1 0-2-.1-3-.4L4 20l1.5-4C4 14.7 3 13 3 11c0-4 4-7 9-7z"/></svg>',
- pormenor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg>',
- legenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14"/><path d="M7 10h10M7 14h7"/></svg>'
-};
+const ROT={balao:'fala',pormenor:'pormenor',legenda:'ver'};
 
 const app=$('#app'),fx=$('#fx'),f=fx.getContext('2d');let cv=$('#cv');
 
@@ -396,7 +373,7 @@ function texDe(id){
 }
 initGL();
 const leg=$('#legenda'),legP=leg.querySelector('p'),retic=$('#retic'),prog=retic.querySelector('.p');
-const bdEl=$('#bd'),hud=$('#hud'),marcasEl=$('#marcas'),branco=$('#branco');
+const balao=$('#balao'),lupa=$('#lupa'),hud=$('#hud'),marcasEl=$('#marcas'),branco=$('#branco');
 
 let W=0,H=0,DPR=1,t=0,last=0,fase='entrada',pi=0,P=PLANOS[0],imgs={};
 const cam={x:0,y:0},alvo={x:0,y:0};
@@ -532,9 +509,10 @@ function somGeral(v,tc=.8){if(AC)mestre.gain.setTargetAtTime(som?v:0,AC.currentT
 function fala(txt,hold,quem='Fernão'){fila.push({txt,hold,quem})}
 function mostraFala(){
   if(t<falaAte||!fila.length)return;const {txt,hold,quem}=fila.shift();
-  leg.querySelector('.quem').textContent=quem;leg.classList.remove('on','off');legP.textContent=txt;
+  leg.querySelector('.quem').textContent=quem;leg.classList.remove('on','off');
+  legP.textContent=txt;
   requestAnimationFrame(()=>requestAnimationFrame(()=>leg.classList.add('on')));
-  const d=Math.max(hold||0,3.5+txt.length*.065);falaAte=t+d+.8;
+  const d=Math.max(hold||0,3+txt.length*.06);falaAte=t+d+.8;
   clearTimeout(mostraFala.t);mostraFala.t=setTimeout(()=>{leg.classList.add('off');leg.classList.remove('on')},d*1000);
 }
 
@@ -543,58 +521,20 @@ let marcas=[];
 function montaMarcas(){
   marcasEl.innerHTML='';
   marcas=P.hot.map((h,i)=>{const b=document.createElement('button');b.type='button';b.className='marca';
-    b.setAttribute('aria-label',ROT[h.tipo]);b.innerHTML=ICO[h.tipo]+`<span class="tipo">${ROT[h.tipo]}</span>`;
+    b.setAttribute('aria-label',ROT[h.tipo]);b.innerHTML=`<span class="tipo">${ROT[h.tipo]}</span>`;
     b.addEventListener('click',e=>{e.stopPropagation();descobre(i)});marcasEl.appendChild(b);return b});
 }
 function descobre(i){
   if(vistos.has(i)||fase!=='explora')return;
   const h=P.hot[i];vistos.add(i);dwell=0;dwellIdx=-1;blip();pontos();
   marcas[i].classList.remove('on','perto');marcas[i].style.pointerEvents='none';
-  fila=[];leg.classList.add('off');leg.classList.remove('on');falaAte=t;
-  abreBD(h);
+  falaAte=Math.min(falaAte,t);fila=[];
+  if(h.tipo==='balao'){balao.firstChild.textContent=h.b;ativo={tipo:'balao',h};ativoAte=t+3.4;fala(h.t,0,'Narrador');falaAte=t;}
+  else if(h.tipo==='pormenor'){const im=imgs[P.id];lupa.style.backgroundImage=`url(${im.src})`;ativo={tipo:'pormenor',h};ativoAte=t+5;fala(h.t)}
+  else fala(h.t);
   if(P.id==='tempestade'&&i===0)raio(1.1);
   if(P.id==='tempestade'&&i===5){shake=.8}
   if(vistos.size===P.hot.length)$('#bSeguir').classList.add('pronto');
-}
-/* abre o elemento de BD no sítio do botão: balão (fala + caixa), lupa + caixa, ou só caixa */
-function abreBD(h){
-  fechaBD(true);
-  const el=document.createElement('div');el.className='bd';
-  const caixa=`<div class="caixa"><b>${h.q||'Fernão'}</b></div>`;
-  if(h.tipo==='balao')el.innerHTML=`<div class="grupo"><div class="caixa"><b>${h.q||'Fernão'}</b></div><div class="balao"></div></div>`;
-  else if(h.tipo==='pormenor')el.innerHTML=`<div class="grupo"><div class="lupaBD"></div>${caixa}</div>`;
-  else el.innerHTML=caixa;
-  const cx_=el.querySelector('.caixa');cx_.appendChild(document.createTextNode(h.t));
-  if(h.tipo==='balao')el.querySelector('.balao').textContent=h.b.replace(/^—\s*/,'');
-  if(h.tipo==='pormenor')el.querySelector('.lupaBD').style.backgroundImage=`url(${imgs[P.id].src})`;
-  const x=document.createElement('button');x.type='button';x.className='fechar';x.setAttribute('aria-label','Fechar');x.textContent='×';
-  x.addEventListener('click',e=>{e.stopPropagation();fechaBD()});el.appendChild(x);
-  bdEl.appendChild(el);
-  ativo={h,el};ativoAte=t+Math.max(7,4+(h.t.length+(h.b||'').length)*.075);
-}
-function fechaBD(ja){
-  if(!ativo)return;const el=ativo.el;ativo=null;
-  if(ja){el.remove();return}
-  el.classList.add('sai');setTimeout(()=>el.remove(),260);
-}
-function posBD(){
-  if(!ativo)return;
-  const h=ativo.h,el=ativo.el,[x,y]=uv2ecra(h.x,h.y),w=el.offsetWidth,ht=el.offsetHeight,m=16;
-  let top=y-ht-34,cima=false;
-  if(top<70){top=y+34;cima=true}
-  top=Math.min(H-ht-90,Math.max(70,top));
-  const left=Math.min(W-w-m,Math.max(m,x-w/2));
-  el.style.left=left+'px';el.style.top=top+'px';
-  el.style.setProperty('--ox',(x-left)+'px');el.style.setProperty('--oy',cima?'0%':'100%');
-  const b=el.querySelector('.balao');
-  if(b){b.classList.toggle('cima',cima);const bl=b.offsetLeft;b.style.setProperty('--cauda',Math.min(b.offsetWidth-28,Math.max(28,x-left-bl))+'px')}
-  if(cima&&b&&el.querySelector('.grupo').firstElementChild!==b)el.querySelector('.grupo').prepend(b);
-  if(!cima&&b&&el.querySelector('.grupo').lastElementChild!==b)el.querySelector('.grupo').append(b);
-  const l=el.querySelector('.lupaBD');
-  if(l){const im=imgs[P.id],sz=l.offsetWidth||180,z=h.z||2.4,esc=H/viewH/im.height*z;
-    l.style.backgroundSize=`${im.width*esc}px ${im.height*esc}px`;
-    l.style.backgroundPosition=`${sz/2-h.x*im.width*esc}px ${sz/2-h.y*im.height*esc}px`}
-  if(t>ativoAte)fechaBD();
 }
 function pontos(){$('#pontos').textContent=P.hot.map((_,i)=>vistos.has(i)?'●':'○').join('')}
 function atualizaInteracoes(dt){
@@ -614,12 +554,22 @@ function atualizaInteracoes(dt){
     prog.setAttribute('stroke-dasharray',`${(Math.min(1,dwell/1.3)*119.4).toFixed(1)} 120`);retic.style.opacity=dwell>.2?1:0;
     if(dwell>1.3)descobre(best);
   } else {retic.style.opacity=0;if(best<0){dwell=0;dwellIdx=-1}}
-  posBD();
+  /* balão e lupa seguem a câmara */
+  if(ativo){
+    const h=ativo.h,[x,y]=uv2ecra(h.x,h.y);
+    if(ativo.tipo==='balao'){balao.style.left=x+'px';balao.style.top=(y-H*.04)+'px';balao.classList.add('on')}
+    else{const im=imgs[P.id],sz=lupa.offsetWidth||200,z=h.z||2.4,esc=H/viewH/im.height*z;
+      const lx=Math.min(W-sz/2-12,Math.max(sz/2+12,x+(x<W*.6?sz*.75:-sz*.75))),ly=Math.min(H-sz/2-110,Math.max(sz/2+70,y-sz*.2));
+      lupa.style.left=lx+'px';lupa.style.top=ly+'px';
+      lupa.style.backgroundSize=`${im.width*esc}px ${im.height*esc}px`;
+      lupa.style.backgroundPosition=`${sz/2-h.x*im.width*esc}px ${sz/2-h.y*im.height*esc}px`;lupa.classList.add('on')}
+    if(t>ativoAte){balao.classList.remove('on');lupa.classList.remove('on');ativo=null}
+  }
 }
 
 /* ---------- sequência: tempestade → clarão → praia ---------- */
 function entraPlano(i){
-  pi=i;P=PLANOS[i];vistos=new Set();fechaBD(true);
+  pi=i;P=PLANOS[i];vistos=new Set();ativo=null;balao.classList.remove('on');lupa.classList.remove('on');
   alvo.x=cam.x=P.ini.x;alvo.y=cam.y=P.ini.y;$('#lugar').innerHTML=P.lugar;
   $('#planoTxt').textContent=`Plano ${i+1} de ${PLANOS.length}`;
   [...$('#planos').children].forEach((el,k)=>{el.className=k<i?'feito':k===i?'agora':''});
@@ -630,7 +580,7 @@ function avancar(){
   if(fase!=='explora')return;
   if(P.id==='tempestade')iniciaFinal();else terminar();
 }
-function iniciaFinal(){fase='final';fimT=t;pf={};stormAlvo=2.4;fila=[];retic.style.opacity=0;fechaBD(true)}
+function iniciaFinal(){fase='final';fimT=t;pf={};stormAlvo=2.4;fila=[];retic.style.opacity=0;ativo=null;balao.classList.remove('on');lupa.classList.remove('on')}
 function passoFinal(){
   const e=t-fimT;
   if(e>.8&&!pf.a){pf.a=1;raio(1.4)}
@@ -674,7 +624,7 @@ const naUI=e=>e.target.closest&&e.target.closest('.btn,.cartao,.marca');
 let arrasto=null;const embalo={x:0,y:0};
 app.addEventListener('pointerdown',e=>{
   if(naUI(e)||(fase!=='explora'&&fase!=='final'))return;
-  arrasto={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,tm:performance.now(),id:e.pointerId};embalo.x=embalo.y=0;app.classList.add('agarra');
+  arrasto={x:e.clientX,y:e.clientY,tm:performance.now(),id:e.pointerId};embalo.x=embalo.y=0;app.classList.add('agarra');
   try{app.setPointerCapture(e.pointerId)}catch(err){}
 });
 app.addEventListener('pointermove',e=>{
@@ -686,7 +636,7 @@ app.addEventListener('pointermove',e=>{
   arrasto.x=e.clientX;arrasto.y=e.clientY;arrasto.tm=performance.now();ultimoMov=t;
   if(giro.on)giro.calibrar=true;
 });
-const largar=e=>{if(!arrasto)return;if(ativo&&e&&Math.hypot(e.clientX-arrasto.sx,e.clientY-arrasto.sy)<8)fechaBD();if(performance.now()-arrasto.tm>120)embalo.x=embalo.y=0;arrasto=null;app.classList.remove('agarra')};
+const largar=()=>{if(!arrasto)return;if(performance.now()-arrasto.tm>120)embalo.x=embalo.y=0;arrasto=null;app.classList.remove('agarra')};
 addEventListener('pointerup',largar);addEventListener('pointercancel',largar);
 function embaloPasso(dt){
   if(arrasto||(!embalo.x&&!embalo.y))return;
@@ -740,5 +690,6 @@ $('#bTransicao').addEventListener('click',()=>comeca(true));
 resize();alvo.x=cam.x=.25;alvo.y=cam.y=-.05;requestAnimationFrame(loop);
 })();
 </script>
+
 
 </body></html>
