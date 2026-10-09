@@ -368,11 +368,15 @@ function initGL(){
 }
 function texDe(id){
   if(texs[id]||!gl||!imgs[id])return texs[id];
-  let src=imgs[id];const max=gl.getParameter(gl.MAX_TEXTURE_SIZE);
-  if(src.width>max){const c=document.createElement('canvas');c.width=max;c.height=Math.round(max*src.height/src.width);c.getContext('2d').drawImage(src,0,0,c.width,c.height);src=c}
-  const tx=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tx);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src);
+  /* iPhone: subir a imagem através de uma tela 2D, em RGBA e com largura moderada */
+  const im=imgs[id],lim_=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048,toque?2048:4096),w=Math.min(im.width,lim_),h=Math.round(w*im.height/im.width);
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
+  const tx=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tx);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
   [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(p=>gl.texParameteri(gl.TEXTURE_2D,p,gl.CLAMP_TO_EDGE));
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);
+  const err=gl.getError();if(err){modoSimples('textura '+err);resize();return null}
   return texs[id]=tx;
 }
 if(location.hash==='#simples')modoSimples('pedido');else initGL();
@@ -402,7 +406,7 @@ function novaGota(){const z=.25+Math.random()*.75;return{x:Math.random()*W*1.3-W
 /* ---------- câmara ---------- */
 const lim=v=>Math.max(-1,Math.min(1,v));
 function calcCam(dt){
-  const k=1-Math.exp(-dt*((arrasto||embalo.x||embalo.y)?14:giro.on?6:2.4));cam.x+=(alvo.x-cam.x)*k;cam.y+=(alvo.y-cam.y)*k;
+  const k=1-Math.exp(-dt*((arrasto||embalo.x||embalo.y)?14:giro.on?9:2.4));cam.x+=(alvo.x-cam.x)*k;cam.y+=(alvo.y-cam.y)*k;
   const ar=W/H, tempestade=P.id==='tempestade';
   viewH=Math.min(ar<1?.94:.82,.9*A/ar);
   let rmax,bobA,bob;
@@ -430,7 +434,7 @@ function desenha(dt){
   const im=imgs[P.id];if(!im)return;
   const F=calcF(),lant=.82+.12*Math.sin(t*11.3)*Math.sin(t*6.7+1)+.08*Math.random()-(F>.3?.1:0);
   const raj=.5+.5*Math.sin(t*.17)*Math.sin(t*.051+2),RS=Math.pow(Math.max(0,Math.sin(t*.8+1)),3);
-  if(gl&&progs[P.id]){
+  if(gl&&progs[P.id]&&texDe(P.id)){
     const pr=progs[P.id],U=pr.U;gl.useProgram(pr.p);
     gl.enableVertexAttribArray(pr.loc);gl.vertexAttribPointer(pr.loc,2,gl.FLOAT,false,0,0);
     gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texDe(P.id));
@@ -445,7 +449,7 @@ function desenha(dt){
         for(const a of [.2,.5,.8])for(const b of [.3,.5,.7]){gl.readPixels(Math.round(cv.width*a),Math.round(cv.height*b),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);soma+=(px[0]+px[1]+px[2])/3}
         const media=soma/9;
         if(media>22)desenha.ok=true;
-        else if((desenha.negros=(desenha.negros||0)+1)>=3){modoSimples('ecrã negro (média '+media.toFixed(0)+')');resize();aviso('Modo simples: sem ondulação neste aparelho',3500)}}}
+        else if((desenha.negros=(desenha.negros||0)+1)>=3){modoSimples('ecrã negro (média '+media.toFixed(0)+')');resize();aviso('Modo simples ('+glFalhou+')',4000)}}}
   } else if(ctx2d){
     const c=ctx2d,sc=H/viewH/im.height;c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#080B11';c.fillRect(0,0,W,H);
     c.translate(W/2,H/2);c.rotate(roll);c.scale(sc,sc);c.translate(-cx*im.width,-cy*im.height);c.drawImage(im,0,0);
@@ -680,14 +684,32 @@ const toque=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
 if(toque&&'DeviceOrientationEvent' in window)$('#bGiro').hidden=false;
 function aviso(txt,ms=2600){const a=$('#aviso');a.textContent=txt;a.classList.add('on');clearTimeout(aviso.t);aviso.t=setTimeout(()=>a.classList.remove('on'),ms)}
 function angEcra(){try{return(screen.orientation&&screen.orientation.angle)||window.orientation||0}catch(e){return 0}}
+/* direção do olhar a partir da orientação completa do aparelho (como numa vista VR) */
+function direcao(al,be,ga,orient){
+  const R=Math.PI/180,x=be*R,y=al*R,z=-ga*R;
+  const c1=Math.cos(x/2),c2=Math.cos(y/2),c3=Math.cos(z/2),s1=Math.sin(x/2),s2=Math.sin(y/2),s3=Math.sin(z/2);
+  let q=[s1*c2*c3+c1*s2*s3, c1*s2*c3-s1*c2*s3, c1*c2*s3-s1*s2*c3, c1*c2*c3+s1*s2*s3]; /* YXZ */
+  const mul=(a,b)=>[a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1], a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0], a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3], a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];
+  q=mul(q,[-Math.SQRT1_2,0,0,Math.SQRT1_2]);
+  const o=-orient*R/2;q=mul(q,[0,0,Math.sin(o),Math.cos(o)]);
+  /* rodar o vetor (0,0,-1) */
+  const [qx,qy,qz,qw]=q,vx=0,vy=0,vz=-1;
+  const ix=qw*vx+qy*vz-qz*vy,iy=qw*vy+qz*vx-qx*vz,iz=qw*vz+qx*vy-qy*vx,iw=-qx*vx-qy*vy-qz*vz;
+  const dx=ix*qw+iw*-qx+iy*-qz-iz*-qy,dy=iy*qw+iw*-qy+iz*-qx-ix*-qz,dz=iz*qw+iw*-qz+ix*-qy-iy*-qx;
+  return {yaw:Math.atan2(-dx,-dz)/R,pitch:Math.asin(Math.max(-1,Math.min(1,dy)))/R};
+}
 function onOri(e){
   if(!giro.on||e.alpha==null)return;giro.recebeu=true;
-  const ang=angEcra();let yaw=e.alpha,pitch;
-  if(ang===90)pitch=-e.gamma;else if(ang===-90||ang===270)pitch=e.gamma;else pitch=e.beta;
-  if(giro.calibrar||!giro.base){giro.base={yaw,pitch};giro.alvo0={x:alvo.x,y:alvo.y};giro.calibrar=false;return}
-  let dy=yaw-giro.base.yaw;if(dy>180)dy-=360;if(dy<-180)dy+=360;
-  const dp=pitch-giro.base.pitch;
-  alvo.x=lim(giro.alvo0.x-dy/35);alvo.y=lim(giro.alvo0.y-dp/30);ultimoMov=t;
+  const d=direcao(e.alpha,e.beta,e.gamma||0,angEcra());
+  if(giro.calibrar||!giro.base){giro.base=d;giro.f={yaw:0,pitch:0};giro.alvo0={x:alvo.x,y:alvo.y};giro.calibrar=false;return}
+  let dy=d.yaw-giro.base.yaw;if(dy>180)dy-=360;if(dy<-180)dy+=360;
+  const dp=d.pitch-giro.base.pitch;
+  /* filtro leve contra tremer */
+  giro.f.yaw+=(dy-giro.f.yaw)*.35;giro.f.pitch+=(dp-giro.f.pitch)*.35;
+  /* 1 grau real = 1 grau na imagem: a panorâmica tem ~180° de largura e ~76° de altura */
+  const rx=Math.max(.001,(rng.x1-rng.x0)/2),ry=Math.max(.001,(rng.y1-rng.y0)/2);
+  alvo.x=lim(giro.alvo0.x-(giro.f.yaw/180)/rx);
+  alvo.y=lim(giro.alvo0.y-(giro.f.pitch/(180/A))/ry);ultimoMov=t;
 }
 addEventListener('deviceorientation',onOri);
 $('#bGiro').addEventListener('click',async e=>{
