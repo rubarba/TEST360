@@ -375,7 +375,7 @@ function texDe(id){
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   return texs[id]=tx;
 }
-initGL();
+if(location.hash==='#simples')modoSimples('pedido');else initGL();
 const leg=$('#legenda'),legP=leg.querySelector('p'),retic=$('#retic'),prog=retic.querySelector('.p');
 const balao=$('#balao'),lupa=$('#lupa'),hud=$('#hud'),marcasEl=$('#marcas'),branco=$('#branco');
 
@@ -438,11 +438,14 @@ function desenha(dt){
     gl.uniform1f(U.RO,roll);gl.uniform1f(U.tm,t);gl.uniform1f(U.F,F);gl.uniform1f(U.L,lant);
     gl.uniform1f(U.Wv,storm*(reduz?.5:1));gl.uniform1f(U.G,raj);gl.uniform1f(U.RS,RS);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-    /* verificação: se o ecrã sair negro, passa para o modo simples */
-    if(!desenha.ok&&fase!=='entrada'){desenha.n=(desenha.n||0)+1;
-      if(desenha.n%20===0){const px=new Uint8Array(4);let soma=0;
-        for(const [a,b] of [[.5,.5],[.3,.4],[.7,.6],[.5,.25]]){gl.readPixels(Math.round(cv.width*a),Math.round(cv.height*b),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);soma+=px[0]+px[1]+px[2]}
-        if(soma>40)desenha.ok=true;else if(desenha.n>=60){modoSimples('ecrã negro');resize();aviso('Modo simples: sem ondulação neste aparelho',3500)}}}
+    /* verificação: média de 9 pontos; se a imagem não aparecer (só grão), passa para o modo simples */
+    const pode=fase==='explora'&&(P.id==='tempestade'||(acordarT>=0&&t-acordarT>6));
+    if(!desenha.ok&&pode){desenha.n=(desenha.n||0)+1;
+      if(desenha.n%15===0){const px=new Uint8Array(4);let soma=0;
+        for(const a of [.2,.5,.8])for(const b of [.3,.5,.7]){gl.readPixels(Math.round(cv.width*a),Math.round(cv.height*b),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);soma+=(px[0]+px[1]+px[2])/3}
+        const media=soma/9;
+        if(media>22)desenha.ok=true;
+        else if((desenha.negros=(desenha.negros||0)+1)>=3){modoSimples('ecrã negro (média '+media.toFixed(0)+')');resize();aviso('Modo simples: sem ondulação neste aparelho',3500)}}}
   } else if(ctx2d){
     const c=ctx2d,sc=H/viewH/im.height;c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#080B11';c.fillRect(0,0,W,H);
     c.translate(W/2,H/2);c.rotate(roll);c.scale(sc,sc);c.translate(-cx*im.width,-cy*im.height);c.drawImage(im,0,0);
