@@ -39,7 +39,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #palp .pb{bottom:0;border-radius:50% 50% 0 0/38% 38% 0 0;transform:translateY(105%)}
 .vin{position:absolute;left:0;right:0;pointer-events:none;transition:opacity .6s}
 .vin.topo{top:0;height:min(22vh,170px);background:linear-gradient(180deg,rgba(8,11,17,.8),rgba(8,11,17,0))}
-.vin.base{bottom:0;height:min(34vh,280px);background:linear-gradient(0deg,rgba(8,11,17,.85),rgba(8,11,17,0))}
+.vin.base{bottom:0;height:min(50vh,430px);background:linear-gradient(0deg,rgba(8,11,17,.9),rgba(8,11,17,.55) 40%,rgba(8,11,17,0))}
 #branco{position:absolute;inset:0;background:#F4F2EC;opacity:0;pointer-events:none}
 #branco p{position:absolute;left:0;right:0;top:50%;margin:0;transform:translateY(-50%);text-align:center;
   font-family:var(--mono);font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--tinta);opacity:0;transition:opacity 1.2s}
@@ -72,6 +72,8 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 .planos i{display:block;width:34px;height:2px;background:rgba(154,166,176,.3)}
 .planos i.feito{background:var(--papel-fraco)}
 .planos i.agora{background:var(--lanterna)}
+.progresso #bMapa{pointer-events:auto;align-self:flex-start}
+.progresso #bMapa:disabled{opacity:.45;cursor:default}
 .descobertas{font-variant-numeric:tabular-nums}
 .descobertas span{color:var(--lanterna);letter-spacing:.3em}
 #bSeguir{pointer-events:auto;border-color:rgba(227,164,76,.5)}
@@ -117,7 +119,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 #legenda{opacity:0;transition:opacity .35s ease}
 #legenda.on{opacity:1}
 #legenda.off{opacity:0;transition-duration:.6s}
-#legenda .quem{display:block;font-family:var(--mono);font-weight:500;font-size:12.5px;letter-spacing:.3em;color:var(--lanterna);margin-bottom:.5rem;text-transform:uppercase;
+#legenda .quem{display:none;font-family:var(--mono);font-weight:500;font-size:12.5px;letter-spacing:.3em;color:var(--lanterna);margin-bottom:.5rem;text-transform:uppercase;
   text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
 #legenda p{margin:0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(1.4rem,2.8vw,2.05rem);line-height:1.38;color:#fff;text-wrap:balance;
   text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
@@ -182,7 +184,8 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
       <div class="progresso">
         <span id="planoTxt">Plano 1 de 2</span>
         <div class="planos" id="planos"><i class="agora"></i><i></i></div>
-        <span class="descobertas">Descobertas <span id="pontos">○○○○○○</span></span>
+        <span id="pontos" hidden></span>
+        <button class="btn" id="bMapa" type="button" disabled title="Mapa · em breve"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
       </div>
       <button class="btn" id="bSeguir" type="button">Avançar →</button>
     </div>
