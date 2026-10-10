@@ -28,6 +28,8 @@ body{margin:0;background:var(--abismo);color:var(--papel);font-family:var(--seri
   font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--abismo);background:var(--lanterna);
   padding:7px 12px;border-radius:2px;opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;z-index:4}
 #aviso.on{opacity:1}
+#agua{position:absolute;inset:-10% 0 0 0;pointer-events:none;opacity:0;transform:translateY(105%);
+  background:linear-gradient(0deg,rgba(10,22,32,.97) 0%,rgba(28,52,68,.92) 55%,rgba(70,100,120,.75) 85%,rgba(150,180,200,0) 100%)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #fx,#lay{pointer-events:none}
 #palp{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -49,8 +51,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hud .topo{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
   padding:calc(16px + env(safe-area-inset-top,0px)) 20px 0}
 .serie{display:flex;flex-direction:column;gap:6px;min-width:0}
-.serie .nome{font-family:var(--caps);font-weight:700;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--papel)}
-.serie .ep{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--papel-fraco)}
+.serie .nome{display:flex;align-items:center;gap:10px;font-family:var(--caps);font-weight:700;font-size:16px;letter-spacing:.2em;text-shadow:0 1px 8px #000;text-transform:uppercase;color:var(--papel)}
+.serie .ep{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel);text-shadow:0 1px 8px #000;padding-left:34px}
+.rosa{width:24px;height:24px;color:var(--lanterna);flex:none}
 .serie .ep b{color:var(--lanterna);font-weight:500}
 .dir{display:flex;gap:8px;align-items:center;pointer-events:auto}
 .lugar{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--papel-fraco);text-align:right;padding-right:6px;line-height:1.6}
@@ -109,14 +112,14 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 
 /* ---------- legenda ---------- */
 #legenda{position:absolute;left:50%;bottom:calc(9vh + 36px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
-  width:min(44rem,calc(100% - 40px));text-align:center;pointer-events:none}
+  width:min(52rem,calc(100% - 32px));text-align:center;pointer-events:none}
 /* legendas ao estilo dos jogos: letra direita, branca, sombra ligeira */
 #legenda{opacity:0;transition:opacity .35s ease}
 #legenda.on{opacity:1}
 #legenda.off{opacity:0;transition-duration:.6s}
-#legenda .quem{display:block;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.3em;color:var(--lanterna);margin-bottom:.5rem;text-transform:uppercase;
+#legenda .quem{display:block;font-family:var(--mono);font-weight:500;font-size:12.5px;letter-spacing:.3em;color:var(--lanterna);margin-bottom:.5rem;text-transform:uppercase;
   text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
-#legenda p{margin:0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(1.15rem,2.2vw,1.6rem);line-height:1.42;color:#fff;text-wrap:balance;
+#legenda p{margin:0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(1.4rem,2.8vw,2.05rem);line-height:1.38;color:#fff;text-wrap:balance;
   text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
 
 /* ---------- cartões ---------- */
@@ -165,11 +168,10 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <div class="hud" id="hud">
     <div class="topo">
       <div class="serie so-hud">
-        <span class="nome">Dezassete vezes vendido</span>
-        <span class="ep"><b>VI · 9</b> &nbsp;O milhano</span>
+        <span class="nome"><svg class="rosa" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/><path d="M12 6.5 12.9 11.1 17.5 12 12.9 12.9 12 17.5 11.1 12.9 6.5 12 11.1 11.1Z" fill="var(--abismo)" transform="rotate(45 12 12)" opacity=".55"/></svg>Dezassete vezes vendido</span>
+        <span class="ep" id="lugar">Ilha dos Ladrões · Outono de 1540 · noite</span>
       </div>
       <div class="dir">
-        <span class="lugar so-hud" id="lugar">Ilha dos Ladrões<br>Outono de 1540 · noite</span>
         <button class="btn so-hud" id="bGiro" type="button" aria-pressed="false" hidden title="Olhar inclinando o aparelho">Inclinar</button>
         <button class="btn so-hud" id="bSom" type="button" aria-pressed="true">Som</button>
         <button class="btn so-hud" id="bEcra" type="button">Ecrã</button>
@@ -186,6 +188,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
     </div>
   </div>
 
+  <div id="agua" aria-hidden="true"></div>
   <div id="aviso" role="status"></div>
   <div id="branco"><p>De manhã</p></div>
 
@@ -220,7 +223,7 @@ const $=s=>document.querySelector(s);
 
 /* ---------- planos ---------- */
 const PLANOS=[
- {id:'tempestade', img:'tempestade.jpg', lugar:'Ilha dos Ladrões<br>Outono de 1540 · noite', ini:{x:.1,y:-.05},
+ {id:'tempestade', img:'tempestade.jpg', lugar:'Ilha dos Ladrões · Outono de 1540 · noite', ini:{x:.1,y:-.05},
   intro:'Ao décimo segundo dia chega um temporal que não parece coisa natural.',
   luzes:[[.32,.755,1.6],[.543,.478,.7],[.583,.52,.6],[.565,.515,.5],[.278,.522,.35],[.433,.533,.35]],
   espuma:[[.22,.72],[.85,.55],[.93,.66],[.62,.70]],
@@ -241,7 +244,7 @@ const PLANOS=[
    {id:'sentado',src:'c_sentado.png',box:[0.19605,0.527,0.26395,0.719]},
    {id:'gaivota',src:'c_gaivota.png',box:[0.477,0.59555,0.51,0.659]},
    {id:'bandeira',src:'c_bandeira.png',box:[0.637,0.4686,0.722,0.5624]}
-  ], lugar:'Ilha dos Ladrões<br>Outono de 1540 · manhã', ini:{x:-.05,y:.1},
+  ], lugar:'Ilha dos Ladrões · Outono de 1540 · manhã', ini:{x:-.05,y:.1},
   intro:'Os cinquenta e três que se salvam passam a noite metidos num charco, nus, a tremer. De manhã voltam à praia.',
   hot:[
    {x:.19,y:.48,r:.12,tipo:'legenda',t:'A praia está coberta de corpos.'},
@@ -280,11 +283,11 @@ void main(){
  vec2 uv=olhar();vec2 off=vec2(0.);
  /* juncos ao longe: cada um baloiça no seu ritmo */
  float j1=caixa(uv,vec4(.235,.295,.37,.525),.008),j2=caixa(uv,vec4(.405,.465,.385,.53),.008),j3=caixa(uv,vec4(.525,.675,.21,.585),.012);
- off+=j1*junco(uv,vec2(.265,.505),sin(tm*.9)*.05*Wv,sin(tm*.9+1.3)*.003*Wv);
- off+=j2*junco(uv,vec2(.435,.515),sin(tm*1.1+2.)*.05*Wv,sin(tm*1.1+3.)*.003*Wv);
- off+=j3*junco(uv,vec2(.60,.555),sin(tm*.75+4.)*.035*Wv,sin(tm*.75+5.)*.005*Wv);
+ off+=j1*junco(uv,vec2(.265,.505),sin(tm*.9)*.085*Wv,sin(tm*.9+1.3)*.007*Wv);
+ off+=j2*junco(uv,vec2(.435,.515),sin(tm*1.1+2.)*.085*Wv,sin(tm*1.1+3.)*.007*Wv);
+ off+=j3*junco(uv,vec2(.60,.555),sin(tm*.75+4.)*.06*Wv,sin(tm*.75+5.)*.010*Wv);
  /* homem na água: sobe e desce com as vagas */
- float naufr=caixa(uv,vec4(.30,.38,.575,.635),.008);
+ float naufr=caixa(uv,vec4(.29,.39,.525,.645),.018);
  off+=naufr*vec2(sin(tm*.8)*.002,sin(tm*1.3)*.006*Wv);
  float rocha=caixa(uv,vec4(.715,.785,.37,.56),.01);
  float cordas=max(max(corda(uv,vec2(.135,0.),vec2(.22,.745),.009),corda(uv,vec2(.175,0.),vec2(.27,.765),.009)),max(corda(uv,vec2(.06,.51),vec2(.20,.40),.009),corda(uv,vec2(.15,.39),vec2(.21,.40),.009)));
@@ -416,7 +419,7 @@ const balao=$('#balao'),lupa=$('#lupa'),hud=$('#hud'),marcasEl=$('#marcas'),bran
 let W=0,H=0,DPR=1,t=0,last=0,fase='entrada',pi=0,P=PLANOS[0],imgs={};
 const cam={x:0,y:0},alvo={x:0,y:0};
 let cx=.5,cy=.5,viewH=.8,roll=0,shake=0,storm=1,stormAlvo=1,rng={x0:.3,x1:.7,y0:.45,y1:.55};
-let acordarT=-1,acordarEw=1;
+let acordarT=-1,acordarEw=1,afundT=-1;
 const ESPUMA=[{u:.555,v:.365,prox:2},{u:.79,v:.375,prox:4},{u:.60,v:.54,prox:6}];let salpicos=[],encandeia=0;
 let vistos=new Set(),dwell=0,dwellIdx=-1,falaAte=0,fila=[],ativo=null,ativoAte=0,fimT=0,pf={},flashes=[],proxRaio=4,gotas=[],grao=null,ultimoMov=0;
 
@@ -443,8 +446,9 @@ function calcCam(dt){
   const ar=W/H, tempestade=P.id==='tempestade';
   viewH=Math.min(ar<1?.94:.82,.9*A/ar);
   let rmax,bobA,bob;
-  if(tempestade){rmax=Math.min(.06,.024*storm)*(reduz?.3:1);roll=rmax*(.75*Math.sin(t*.55)+.25*Math.sin(t*.23+1.3));
-    bobA=.011*storm*(reduz?.3:1);bob=Math.sin(t*.55+1.2)*bobA}
+  if(tempestade){rmax=Math.min(.10,.036*storm)*(reduz?.3:1);roll=rmax*(.75*Math.sin(t*.55)+.25*Math.sin(t*.23+1.3));
+    bobA=.017*storm*(reduz?.3:1);bob=Math.sin(t*.55+1.2)*bobA;
+    if(afundT>=0){const k=Math.min(1,(t-afundT)/2.6),kk=k*k*(3-2*k);roll+=kk*.24;bob+=kk*.05;viewH*=1-.28*kk;rmax+=kk*.24;bobA+=.05}}
   else{
     /* acordar de desmaiado: começa inclinado e a olhar para baixo, endireita-se; depois respira */
     const w=acordarT<0?1:Math.min(1,(t-acordarT)/8);acordarEw=1-Math.pow(1-w,3);const nao=1-acordarEw,m=reduz?.3:1;
@@ -538,7 +542,7 @@ function desenha(dt){
 /* modo simples: o mar ondula redesenhando a imagem em tiras finas deslocadas, só dentro da zona de mar */
 const MAR={
  tempestade:{poly:[[0,.505],[.80,.505],[.80,1],[.70,1],[.06,.655],[0,.62]],topo:.505,y1:1,amp:2.2,
-   buracos:[[.235,.37,.295,.525],[.405,.385,.465,.53],[.525,.21,.675,.585],[.30,.575,.38,.635],[.715,.37,.785,.56],[.03,.55,.21,.92],[.295,.67,.35,.83]]},
+   buracos:[[.235,.37,.295,.525],[.405,.385,.465,.53],[.525,.21,.675,.585],[.29,.525,.39,.645],[.715,.37,.785,.56],[.03,.55,.21,.92],[.295,.67,.35,.83]]},
  praia:{poly:[[.29,.325],[.875,.325],[.875,1],[.62,1],[.56,.93],[.53,.86],[.555,.78],[.50,.70],[.41,.62],[.36,.55],[.32,.45],[.28,.38]],topo:.325,y1:1,amp:.9,
    buracos:[[.34,.33,.50,.405],[.51,.325,.565,.40],[.75,.325,.89,.45],[.42,.585,.555,.72],[.60,.53,.76,.69],[.60,.80,.71,.94],[.865,.38,1,.76],[.66,.68,.87,.85]]}
 };
@@ -635,6 +639,7 @@ function palpebras(){
   if(P.id==='praia'&&acordarT>=0){const e=t-acordarT;
     if(e<5){for(let i=1;i<PK.length;i++)if(e<=PK[i][0]){const [t0,a]=PK[i-1],[t1,b]=PK[i],k=(e-t0)/(t1-t0);o=a+(b-a)*k*k*(3-2*k);break}}
     bl=Math.max(0,1-e/7)*9;}
+  if(afundT>=0&&t-afundT>1.5)bl=Math.max(bl,5);
   $('#palp').style.opacity=(1-o).toFixed(3);
   const fl=bl>.2?`blur(${bl.toFixed(1)}px)`:'';if(cv.style.filter!==fl){cv.style.filter=fl;lay.style.filter=fl}
 }
@@ -655,7 +660,7 @@ function raio(forca=1){let s=t;const n=2+(Math.random()*3|0);
 function calcF(){flashes=flashes.filter(x=>t-x.s<1.2);let v=0;for(const x of flashes)if(t>=x.s)v+=x.a*Math.exp(-(t-x.s)*9);return Math.min(1.6,v)}
 
 /* ---------- som (gerado no browser) ---------- */
-let AC=null,mestre=null,som=true,BW,BB,ch={};
+let abafa=null,AC=null,mestre=null,som=true,BW,BB,ch={};
 function buf(tipo){const n=AC.sampleRate*4,b=AC.createBuffer(2,n,AC.sampleRate);
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;if(tipo==='b'){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}}return b}
 function filt(tp,fq,Q){const b=AC.createBiquadFilter();b.type=tp;b.frequency.value=fq;if(Q)b.Q.value=Q;return b}
@@ -668,7 +673,7 @@ function iniciaAudio(){
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
   try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
   const comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;
-  mestre=AC.createGain();mestre.gain.value=0;mestre.connect(comp);comp.connect(AC.destination);
+  mestre=AC.createGain();mestre.gain.value=0;abafa=AC.createBiquadFilter();abafa.type='lowpass';abafa.frequency.value=20000;mestre.connect(abafa);abafa.connect(comp);comp.connect(AC.destination);
   BW=buf('w');BB=buf('b');
   ch.busT=AC.createGain();ch.busT.connect(mestre);ch.busP=AC.createGain();ch.busP.gain.value=0;ch.busP.connect(mestre);
   ch.vento=canal(BB,[filt('bandpass',420,.7)],.5,ch.busT);
@@ -781,16 +786,25 @@ function passoFinal(){
   const e=t-fimT;
   if(e>.8&&!pf.a){pf.a=1;raio(1.4)}
   if(e>2.6&&!pf.b){pf.b=1;raio(1.7);shake=1;fala('Às duas da madrugada, uma rajada atira as quatro embarcações contra a costa ao mesmo tempo.',3.6,'Narrador')}
-  if(e>7&&!pf.c){pf.c=1;
-    /* clarão: branco imediato, som corta */
-    branco.style.transition='opacity .12s';branco.style.opacity=1;if(AC){mestre.gain.cancelScheduledValues(AC.currentTime);mestre.gain.setValueAtTime(0,AC.currentTime)}
+  if(e>4.2&&!pf.x){pf.x=1;afundT=t;stormAlvo=3.4;shake=1.4;raio(2)}
+  if(e>5.8&&!pf.y){pf.y=1;
+    /* a vaga entra: água a subir pelo ecrã, tudo desfocado e o som abafado */
+    const ag=$('#agua');ag.style.transition='transform .7s cubic-bezier(.3,.7,.4,1), opacity .3s';ag.style.opacity=1;ag.style.transform='translateY(0)';
+    cv.style.filter=lay.style.filter='blur(5px)';
+    if(AC&&abafa){abafa.frequency.cancelScheduledValues(AC.currentTime);abafa.frequency.setTargetAtTime(380,AC.currentTime,.12)}
     leg.classList.add('off');leg.classList.remove('on');fila=[];
   }
-  if(e>7.6&&!pf.d){pf.d=1;storm=stormAlvo=1;entraPlano(1);setTimeout(()=>{branco.querySelector('p').style.opacity=1},300)}
-  if(e>10&&!pf.e){pf.e=1;branco.querySelector('p').style.opacity=0;acordarT=t;
+  if(e>7.4&&!pf.c){pf.c=1;
+    /* escuro: debaixo de água, o som vai-se */
+    branco.style.background='#05070a';branco.querySelector('p').style.color='#E9E3D5';
+    branco.style.transition='opacity .6s';branco.style.opacity=1;if(AC){mestre.gain.cancelScheduledValues(AC.currentTime);mestre.gain.setTargetAtTime(0,AC.currentTime,.35)}
+  }
+  if(e>8.4&&!pf.d){pf.d=1;afundT=-1;const ag=$('#agua');ag.style.transition='none';ag.style.opacity=0;ag.style.transform='translateY(105%)';
+    if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);storm=stormAlvo=1;entraPlano(1);setTimeout(()=>{branco.querySelector('p').style.opacity=1},300)}
+  if(e>11&&!pf.e){pf.e=1;branco.querySelector('p').style.opacity=0;acordarT=t;
     branco.style.transition='opacity 1.4s ease';branco.style.opacity=0;
     if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}somGeral(.9,1.6)}
-  if(e>15&&!pf.f){pf.f=1;fase='explora';fala(P.intro,5.5,'Narrador')}
+  if(e>16&&!pf.f){pf.f=1;fase='explora';fala(P.intro,5.5,'Narrador')}
 }
 function terminar(){fase='fim';somGeral(.25,1.5);setTimeout(()=>$('#fim').classList.remove('fora'),600)}
 function comeca(salto){
@@ -798,7 +812,9 @@ function comeca(salto){
   if(AC){ch.busT.gain.setValueAtTime(1,AC.currentTime);ch.busP.gain.setValueAtTime(0,AC.currentTime)}
   somGeral(.9,1.2);branco.style.transition='none';branco.style.opacity=0;
   $('#entrada').classList.add('fora');$('#fim').classList.add('fora');
-  acordarT=-1;acordarEw=1;  storm=stormAlvo=1;entraPlano(0);proxRaio=t+2;
+  acordarT=-1;acordarEw=1;afundT=-1;branco.style.background='';branco.querySelector('p').style.color='';
+  {const ag=$('#agua');ag.style.transition='none';ag.style.opacity=0;ag.style.transform='translateY(105%)'}
+  if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);  storm=stormAlvo=1;entraPlano(0);proxRaio=t+2;
   if(salto){P.hot.forEach((_,i)=>vistos.add(i));pontos();fase='explora';iniciaFinal()}
   else if(location.hash.includes('praia')){entraPlano(1);acordarT=t-30;acordarEw=1;fase='explora';
     if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}}
