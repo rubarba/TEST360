@@ -42,7 +42,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .vin.base{bottom:0;height:min(50vh,430px);background:linear-gradient(0deg,rgba(8,11,17,.9),rgba(8,11,17,.55) 40%,rgba(8,11,17,0))}
 #branco{position:absolute;inset:0;background:#F4F2EC;opacity:0;pointer-events:none}
 #branco p{position:absolute;left:0;right:0;top:50%;margin:0;transform:translateY(-50%);text-align:center;
-  font-family:var(--mono);font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--tinta);opacity:0;transition:opacity 1.2s}
+  font-family:var(--serif);font-style:italic;font-size:clamp(1.3rem,2.6vw,1.9rem);letter-spacing:.02em;color:var(--tinta);opacity:0;transition:opacity 1.2s;padding-inline:20px}
 
 /* ---------- HUD ---------- */
 .hud{position:absolute;inset:0;pointer-events:none;transition:opacity .5s}
@@ -118,6 +118,11 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 /* legendas ao estilo dos jogos: letra direita, branca, sombra ligeira */
 #legenda{opacity:0;transition:opacity .35s ease}
 #legenda.on{opacity:1}
+#legenda .seq{display:flex;justify-content:center;gap:6px;margin-top:.7rem;min-height:6px}
+#legenda .seq i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3)}
+#legenda .seq i.v{background:rgba(255,255,255,.85)}
+#balao.rot div{background:none;box-shadow:none;color:#fff;font-family:var(--mono);font-style:normal;font-size:12px;letter-spacing:.18em;text-transform:uppercase;text-shadow:0 1px 3px #000,0 0 10px rgba(0,0,0,.7);padding:4px 8px}
+#balao.rot div::after{display:none}
 #legenda.off{opacity:0;transition-duration:.6s}
 #legenda .quem{display:none;font-family:var(--mono);font-weight:500;font-size:12.5px;letter-spacing:.3em;color:var(--lanterna);margin-bottom:.5rem;text-transform:uppercase;
   text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)}
@@ -130,14 +135,21 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   transition:opacity 1.4s ease;cursor:default;z-index:5}
 .cartao.fora{opacity:0;pointer-events:none}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--lanterna)}
-.titulo{align-items:center;text-align:center;gap:1.1rem;background:radial-gradient(80% 60% at 50% 45%,rgba(8,11,17,.55),rgba(8,11,17,.92))}
-.titulo .rosaG{width:46px;height:46px;color:var(--lanterna);opacity:.9}
-.titulo h1{font-size:clamp(2.2rem,6.4vw,5.2rem);letter-spacing:.06em;text-transform:uppercase;text-shadow:0 2px 30px rgba(0,0,0,.6)}
-.titulo .ep{font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--lanterna)}
-.titulo .acoes{justify-content:center;margin-top:1.4rem}
-.titulo .cta{padding:15px 44px}
-.titulo .fones{position:absolute;left:0;right:0;bottom:calc(5vh + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:center;gap:8px;
+.titulo{align-items:flex-start;text-align:left;gap:1rem;background:linear-gradient(90deg,rgba(8,11,17,.94) 0%,rgba(8,11,17,.82) 45%,rgba(8,11,17,.35) 100%)}
+.titulo .ep{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--lanterna)}
+.titulo .ep .rosa{width:22px;height:22px}
+.titulo h1{font-size:clamp(2.2rem,6vw,5rem);letter-spacing:.04em;text-transform:uppercase;max-width:12ch;text-shadow:0 2px 30px rgba(0,0,0,.6)}
+.titulo .sub{font-style:italic;font-size:clamp(1.05rem,1.8vw,1.35rem);color:var(--papel);max-width:40ch}
+.titulo .contexto{max-width:52ch;color:var(--papel-fraco);font-size:clamp(.98rem,1.4vw,1.08rem);line-height:1.7}
+.titulo .menu{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;margin-top:1.2rem}
+.titulo .menu .cta{padding:14px 40px;margin-bottom:.6rem}
+.titulo .menu .item{font-family:var(--caps);font-weight:700;font-size:.95rem;letter-spacing:.2em;text-transform:uppercase;color:var(--papel);background:none;border:0;border-left:2px solid transparent;padding:6px 12px;cursor:pointer}
+.titulo .menu .item:hover:not([disabled]){border-left-color:var(--lanterna);color:var(--lanterna)}
+.titulo .menu .item[disabled]{opacity:.4;cursor:default}
+.titulo .menu .item small{font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.18em;margin-left:10px;color:var(--papel-fraco)}
+.titulo .fones{margin-top:1.2rem;display:flex;align-items:center;gap:8px;
   font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel-fraco)}
+@media (max-height:640px){.titulo .contexto{display:none}}
 .hud.escondido{opacity:0;pointer-events:none}
 .cartao h1{font-family:var(--caps);font-weight:700;font-size:clamp(2.4rem,7.5vw,5.8rem);line-height:.98;letter-spacing:.02em;margin:0;text-wrap:balance}
 .cartao h2{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(1.6rem,3.6vw,2.6rem);line-height:1.3;margin:0;max-width:24ch;text-wrap:balance}
@@ -174,7 +186,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <div id="lupa"></div>
   <div id="balao"><div></div></div>
   <svg id="retic" viewBox="0 0 46 46" aria-hidden="true"><circle class="b" cx="23" cy="23" r="19"/><circle class="p" cx="23" cy="23" r="19" stroke-dasharray="0 120"/></svg>
-  <div id="legenda" aria-live="polite"><span class="quem">Fernão</span><p></p></div>
+  <div id="legenda" aria-live="polite"><span class="quem">Fernão</span><p></p><div class="seq" aria-hidden="true"></div></div>
 
   <div class="hud escondido" id="hud">
     <div class="topo">
@@ -205,13 +217,17 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <div id="branco"><p>De manhã</p></div>
 
   <section class="cartao titulo" id="entrada">
-    <svg class="rosaG" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/></svg>
+    <div class="ep"><svg class="rosa" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/></svg>Episódio VI · O milhano</div>
     <h1>Dezassete vezes vendido</h1>
-    <div class="ep">Episódio VI · O milhano</div>
-    <div class="acoes">
+    <p class="sub">A vida de Fernão Mendes Pinto, ou como comer bem onde era suposto morrer.</p>
+    <p class="contexto">Outono de 1540, mar da China. Há sete meses e meio que António de Faria anda atrás de Coja Acém, o corsário de quem jurou vingar-se. Os homens estão cansados e querem as suas partes. Quatro juncos esperam a monção numa ilha a que chamam dos Ladrões. Fernão vai num deles.</p>
+    <nav class="menu" aria-label="Menu">
       <button class="cta" id="bEntrar" type="button" disabled>A carregar…</button>
+      <button class="item" type="button" disabled>Episódios <small>em breve</small></button>
+      <button class="item" type="button" disabled>Opções <small>em breve</small></button>
+      <button class="item" type="button" disabled>Créditos <small>em breve</small></button>
       <button class="cta sec" id="bSalto" type="button" disabled hidden>Ver só a transição</button>
-    </div>
+    </nav>
     <div class="fones"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>Melhor com auscultadores</div>
   </section>
 
@@ -235,16 +251,19 @@ const $=s=>document.querySelector(s);
 /* ---------- planos ---------- */
 const PLANOS=[
  {id:'tempestade', img:'tempestade.jpg', lugar:'Ilha dos Ladrões · Outono de 1540 · noite', ini:{x:.1,y:-.05},
-  intro:'Ao décimo segundo dia chega um temporal que não parece coisa natural.',
-  luzes:[[.32,.755,1.6],[.543,.478,.7],[.583,.52,.6],[.565,.515,.5],[.278,.522,.35],[.433,.533,.35]],
-  espuma:[[.22,.72],[.85,.55],[.93,.66],[.62,.70]],
+  legendas:[
+   'Sete meses e meio sem notícias de Coja Acém.',
+   'Os homens reúnem-se e pedem a Faria as suas partes, como está assinado.',
+   'Há gritos. Há quem fale em ir-se embora.',
+   'Acabam num acordo: vão invernar ao Sião, vendem a carga, repartem o ouro.',
+   'Esperam a monção numa ilha a que chamam dos Ladrões.',
+   'Ao décimo segundo dia chega um temporal que não parece coisa natural.',
+   'Cortam mastros. Deitam carga ao mar. Amarram a artilharia às âncoras.'
+  ],
   hot:[
-   {x:.70,y:.30,r:.18,tipo:'legenda',t:'A tempestade começa de noite, que é como começam quase todas.'},
-   {x:.60,y:.40,r:.16,tipo:'legenda',t:'Somos quatro embarcações. Faria quer ir a Sião vender a carga e repartir o dinheiro. É o que nos segura.'},
-   {x:.10,y:.70,r:.16,tipo:'balao',b:'— Cortem o mastro!',t:'Os homens do mar agarram-se às cordas. Os outros descem e fecham-se.'},
-   {x:.32,y:.755,r:.14,tipo:'legenda',t:'Não há lume há dois dias. A primeira coisa que morre numa tempestade é o fogão.'},
-   {x:.34,y:.60,r:.12,tipo:'balao',b:'— Aqui!',t:'Um homem na água, agarrado a uma tábua. Ninguém lhe consegue chegar.'},
-   {x:.86,y:.45,r:.16,tipo:'legenda',t:'Rocha a estibordo. Ninguém a viu até estar em cima de nós.'}
+   {x:.60,y:.40,r:.16,tipo:'nome',b:'Junco de António de Faria'},
+   {x:.34,y:.60,r:.12,tipo:'balao',b:'— Aqui!',t:'Há gente na água, agarrada ao que flutua. Ninguém lhe consegue chegar.'},
+   {x:.32,y:.755,r:.14,tipo:'legenda',t:'Não há lume há dois dias. A primeira coisa que morre numa tempestade é o fogão.'}
   ]},
  {id:'praia', img:'praia_fundo.jpg',
   camadas:[
@@ -256,17 +275,20 @@ const PLANOS=[
    {id:'gaivota',src:'c_gaivota.png',box:[0.477,0.59555,0.51,0.659]},
    {id:'bandeira',src:'c_bandeira.png',box:[0.637,0.4686,0.722,0.5624]}
   ], lugar:'Ilha dos Ladrões · Outono de 1540 · manhã', ini:{x:-.05,y:.1},
-  intro:'Os cinquenta e três que se salvam passam a noite metidos num charco, nus, a tremer. De manhã voltam à praia.',
+  legendas:[
+   'Os cinquenta e três que se salvam passam a noite metidos num charco, nus, a tremer.',
+   'De manhã voltam à praia.',
+   'Está coberta de corpos.',
+   'Os homens caem no chão a chorar e a dar bofetadas na própria cara.',
+   'Fica assim a praia até à tarde.'
+  ],
   hot:[
-   {x:.19,y:.48,r:.12,tipo:'legenda',t:'A praia está coberta de corpos.'},
-   {x:.228,y:.64,r:.12,tipo:'balao',b:'…',t:'Os homens caem no chão a chorar e a dar bofetadas na própria cara.'},
-   {x:.30,y:.50,r:.12,tipo:'balao',b:'— Quantos somos?',t:'Cinquenta e três. Éramos seiscentos e trinta e nove.'},
-   {x:.925,y:.53,r:.14,tipo:'legenda',t:'Cortámos os mastros, deitámos a carga ao mar, amarrámos a artilharia às âncoras. Não chegou.'},
-   {x:.76,y:.76,r:.14,tipo:'legenda',t:'O mar devolve tábuas. A comida que se salvou vem molhada de água salgada. Ao quinto dia está podre.'},
-   {x:.49,y:.60,r:.10,tipo:'legenda',t:'Há aves por todo o lado. Ainda não sabemos que nos vão dar de comer.'}
+   {x:.925,y:.53,r:.14,tipo:'nome',b:'O que resta do junco'},
+   {x:.228,y:.64,r:.12,tipo:'legenda',t:'Ninguém fala. Ninguém conta os mortos. Ainda.'},
+   {x:.49,y:.60,r:.10,tipo:'legenda',t:'Há aves por todo o lado. Ainda ninguém sabe que lhes vão dar de comer.'}
   ]}
 ];
-const ROT={balao:'fala',pormenor:'pormenor',legenda:'ver'};
+const ROT={balao:'fala',pormenor:'pormenor',legenda:'ver',nome:'ver'};
 
 const app=$('#app'),fx=$('#fx'),f=fx.getContext('2d'),lay=$('#lay'),LC=lay.getContext('2d');let cv=$('#cv');
 
@@ -719,15 +741,24 @@ function somGeral(v,tc=.8){if(AC)mestre.gain.setTargetAtTime(som?v:0,AC.currentT
 
 /* ---------- legenda ---------- */
 function fala(txt,hold,quem='Fernão'){fila.push({txt,hold,quem})}
+let atual=null,seqTotal=0;
+function narra(lista){seqTotal=lista.length;fila=lista.map((txt,i)=>({txt,seq:true,idx:i}));atual=null;falaAte=t}
+function escondeLeg(){clearTimeout(mostraFala.t);leg.classList.add('off');leg.classList.remove('on')}
 function mostraFala(){
-  if(t<falaAte||!fila.length)return;const {txt,hold,quem}=fila.shift();
-  leg.querySelector('.quem').textContent=quem;leg.classList.remove('on','off');
-  legP.textContent=txt;
+  if(atual&&atual.seq&&t>=atual.fim&&atual.idx===seqTotal-1&&!fila.length){atual.feito=true;$('#bSeguir').classList.add('pronto')}
+  if(t<falaAte||!fila.length)return;const item=fila.shift();atual=item;
+  leg.classList.remove('on','off');legP.textContent=item.txt;
+  const sq=leg.querySelector('.seq');sq.innerHTML=item.seq?Array.from({length:seqTotal},(_,i)=>`<i class="${i<=item.idx?'v':''}"></i>`).join(''):'';
   requestAnimationFrame(()=>requestAnimationFrame(()=>leg.classList.add('on')));
-  const d=Math.max(hold||0,3+txt.length*.06);falaAte=t+d+.8;
-  clearTimeout(mostraFala.t);mostraFala.t=setTimeout(()=>{leg.classList.add('off');leg.classList.remove('on')},d*1000);
+  const d=Math.max(item.hold||0,3.4+item.txt.length*.065);item.fim=t+d;falaAte=t+d+.7;
+  clearTimeout(mostraFala.t);mostraFala.t=setTimeout(escondeLeg,d*1000);
 }
-
+/* tocar (ou Espaço) passa à legenda seguinte; sem mais legendas, avança o plano */
+function proximaLegenda(){
+  if(atual&&t<atual.fim){atual.fim=t;falaAte=t;escondeLeg();return true}
+  if(fila.length){falaAte=t;return true}
+  return false;
+}
 /* ---------- marcadores e interações ---------- */
 let marcas=[];
 function montaMarcas(){
@@ -740,13 +771,13 @@ function descobre(i){
   if(vistos.has(i)||fase!=='explora')return;
   const h=P.hot[i];vistos.add(i);dwell=0;dwellIdx=-1;blip();pontos();
   marcas[i].classList.remove('on','perto');marcas[i].style.pointerEvents='none';
-  falaAte=Math.min(falaAte,t);fila=[];
-  if(h.tipo==='balao'){balao.firstChild.textContent=h.b;ativo={tipo:'balao',h};ativoAte=t+3.4;fala(h.t,0,'Narrador');falaAte=t;}
-  else if(h.tipo==='pormenor'){const im=imgs[P.id];lupa.style.backgroundImage=`url(${im.src})`;ativo={tipo:'pormenor',h};ativoAte=t+5;fala(h.t)}
+  const resto=fila;fila=[];
+  if(atual&&atual.seq&&t<atual.fim){resto.unshift(atual)}
+  escondeLeg();falaAte=t;balao.classList.remove('rot');
+  if(h.tipo==='nome'){balao.classList.add('rot');balao.firstChild.textContent=h.b;ativo={tipo:'balao',h};ativoAte=t+3.2}
+  else if(h.tipo==='balao'){balao.firstChild.textContent=h.b;ativo={tipo:'balao',h};ativoAte=t+3.4;fala(h.t)}
   else fala(h.t);
-  if(P.id==='tempestade'&&i===0)raio(1.1);
-  if(P.id==='tempestade'&&i===5){shake=.8}
-  if(vistos.size===P.hot.length)$('#bSeguir').classList.add('pronto');
+  fila.push(...resto);
 }
 function pontos(){$('#pontos').textContent=P.hot.map((_,i)=>vistos.has(i)?'●':'○').join('')}
 function atualizaInteracoes(dt){
@@ -796,8 +827,8 @@ function iniciaFinal(){fase='final';fimT=t;pf={};stormAlvo=2.4;fila=[];retic.sty
 function passoFinal(){
   const e=t-fimT;
   if(e>.8&&!pf.a){pf.a=1;raio(1.4)}
-  if(e>2.6&&!pf.b){pf.b=1;raio(1.7);shake=1;fala('Às duas da madrugada, uma rajada atira as quatro embarcações contra a costa ao mesmo tempo.',3.6,'Narrador')}
-  if(e>4.2&&!pf.x){pf.x=1;afundT=t;stormAlvo=3.4;shake=1.4;raio(2)}
+  if(e>2.6&&!pf.b){pf.b=1;raio(1.7);shake=1;fila=[];escondeLeg();atual=null;fala('Às duas da madrugada, uma rajada atira as quatro embarcações contra a costa ao mesmo tempo.',3.2)}
+  if(e>4.2&&!pf.x){pf.x=1;afundT=t;stormAlvo=3.4;shake=1.4;raio(2);falaAte=t;fala('E fazem-se em pedaços.',1.4)}
   if(e>5.8&&!pf.y){pf.y=1;
     /* a vaga entra: água a subir pelo ecrã, tudo desfocado e o som abafado */
     const ag=$('#agua');ag.style.transition='transform .7s cubic-bezier(.3,.7,.4,1), opacity .3s';ag.style.opacity=1;ag.style.transform='translateY(0)';
@@ -808,14 +839,16 @@ function passoFinal(){
   if(e>7.4&&!pf.c){pf.c=1;
     /* escuro: debaixo de água, o som vai-se */
     branco.style.background='#05070a';branco.querySelector('p').style.color='#E9E3D5';
+    branco.querySelector('p').textContent='Morrem quinhentas e oitenta e seis pessoas.';setTimeout(()=>{branco.querySelector('p').style.opacity=1},700);
     branco.style.transition='opacity .6s';branco.style.opacity=1;if(AC){mestre.gain.cancelScheduledValues(AC.currentTime);mestre.gain.setTargetAtTime(0,AC.currentTime,.35)}
   }
   if(e>8.4&&!pf.d){pf.d=1;afundT=-1;const ag=$('#agua');ag.style.transition='none';ag.style.opacity=0;ag.style.transform='translateY(105%)';
-    if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);storm=stormAlvo=1;entraPlano(1);setTimeout(()=>{branco.querySelector('p').style.opacity=1},300)}
-  if(e>11&&!pf.e){pf.e=1;branco.querySelector('p').style.opacity=0;acordarT=t;
+    if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);storm=stormAlvo=1;entraPlano(1)}
+  if(e>10.6&&!pf.z){pf.z=1;const bp=branco.querySelector('p');bp.style.opacity=0;setTimeout(()=>{bp.textContent='De manhã';bp.style.opacity=1},1300)}
+  if(e>13.2&&!pf.e){pf.e=1;branco.querySelector('p').style.opacity=0;acordarT=t;
     branco.style.transition='opacity 1.4s ease';branco.style.opacity=0;
     if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}somGeral(.9,1.6)}
-  if(e>16&&!pf.f){pf.f=1;fase='explora';fala(P.intro,5.5,'Narrador')}
+  if(e>17.5&&!pf.f){pf.f=1;fase='explora';narra(P.legendas)}
 }
 function terminar(){fase='fim';somGeral(.25,1.5);setTimeout(()=>$('#fim').classList.remove('fora'),600)}
 function comeca(salto){
@@ -825,13 +858,13 @@ function comeca(salto){
   $('#entrada').classList.add('fora');$('#fim').classList.add('fora');
   hud.classList.remove('escondido');
   setTimeout(()=>aviso(toque?'Arrasta para olhar · podes inclinar o aparelho':'Arrasta para olhar à volta',3600),1800);
-  acordarT=-1;acordarEw=1;afundT=-1;branco.style.background='';branco.querySelector('p').style.color='';
+  acordarT=-1;acordarEw=1;afundT=-1;branco.style.background='';branco.querySelector('p').style.color='';branco.querySelector('p').textContent='De manhã';branco.querySelector('p').style.opacity=0;
   {const ag=$('#agua');ag.style.transition='none';ag.style.opacity=0;ag.style.transform='translateY(105%)'}
   if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);  storm=stormAlvo=1;entraPlano(0);proxRaio=t+2;
   if(salto){P.hot.forEach((_,i)=>vistos.add(i));pontos();fase='explora';iniciaFinal()}
-  else if(location.hash.includes('praia')){entraPlano(1);acordarT=t-30;acordarEw=1;fase='explora';
+  else if(location.hash.includes('praia')){entraPlano(1);acordarT=t-30;acordarEw=1;fase='explora';narra(P.legendas);
     if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}}
-  else{fase='explora';fala(P.intro,4.5,'Narrador')}
+  else{fase='explora';narra(P.legendas)}
 }
 
 /* ---------- ciclo ---------- */
@@ -852,7 +885,7 @@ const naUI=e=>e.target.closest&&e.target.closest('.btn,.cartao,.marca');
 let arrasto=null;const embalo={x:0,y:0};
 app.addEventListener('pointerdown',e=>{
   if(naUI(e)||(fase!=='explora'&&fase!=='final'))return;
-  arrasto={x:e.clientX,y:e.clientY,tm:performance.now(),id:e.pointerId};embalo.x=embalo.y=0;app.classList.add('agarra');
+  arrasto={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,tm:performance.now(),id:e.pointerId};embalo.x=embalo.y=0;app.classList.add('agarra');
   try{app.setPointerCapture(e.pointerId)}catch(err){}
 });
 app.addEventListener('pointermove',e=>{
@@ -864,7 +897,7 @@ app.addEventListener('pointermove',e=>{
   arrasto.x=e.clientX;arrasto.y=e.clientY;arrasto.tm=performance.now();ultimoMov=t;
   if(giro.on)giro.calibrar=true;
 });
-const largar=()=>{if(!arrasto)return;if(performance.now()-arrasto.tm>120)embalo.x=embalo.y=0;arrasto=null;app.classList.remove('agarra')};
+const largar=e=>{if(!arrasto)return;if(e&&Math.hypot(e.clientX-arrasto.sx,e.clientY-arrasto.sy)<8&&fase==='explora')proximaLegenda();if(performance.now()-arrasto.tm>120)embalo.x=embalo.y=0;arrasto=null;app.classList.remove('agarra')};
 addEventListener('pointerup',largar);addEventListener('pointercancel',largar);
 function embaloPasso(dt){
   if(arrasto||(!embalo.x&&!embalo.y))return;
@@ -917,7 +950,7 @@ $('#bGiro').addEventListener('click',async e=>{
 addEventListener('keydown',e=>{
   if(e.key==='h'||e.key==='H'){toggleHud();return}
   if(fase!=='explora')return;
-  if(e.key===' '||e.key==='Enter'){if(!e.target.closest('button')){e.preventDefault();avancar()}return}
+  if(e.key===' '||e.key==='Enter'){if(!e.target.closest('button')){e.preventDefault();if(!proximaLegenda())avancar()}return}
   const m={ArrowLeft:[-.25,0],ArrowRight:[.25,0],ArrowUp:[0,-.25],ArrowDown:[0,.25]}[e.key];
   if(m){alvo.x=lim(alvo.x+m[0]);alvo.y=lim(alvo.y+m[1]);e.preventDefault()}
 });
