@@ -248,6 +248,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
     <div class="sep"></div>
     <div class="linha"><span>Letra</span><span class="grupo"><button type="button" id="pMenos" aria-label="Letra mais pequena">A−</button><output id="pLetra">100%</output><button type="button" id="pMais" aria-label="Letra maior">A+</button></span></div>
     <label class="linha"><span>Ambiente</span><input type="range" id="pVol" min="0" max="100" value="90"></label>
+    <label class="linha"><span>Música</span><input type="range" id="pMus" min="0" max="100" value="70"></label>
     <label class="linha"><span>Voz <small>em breve</small></span><input type="range" id="pVoz" min="0" max="100" value="90" disabled></label>
     <label class="linha"><span>Reduzir balanço</span><input type="checkbox" id="pBal"></label>
     <div class="sep"></div>
@@ -748,6 +749,7 @@ function iniciaAudio(){
   try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
   const comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;
   mestre=AC.createGain();mestre.gain.value=0;abafa=AC.createBiquadFilter();abafa.type='lowpass';abafa.frequency.value=20000;mestre.connect(abafa);abafa.connect(comp);comp.connect(AC.destination);
+  ligaMusica(comp);
   BW=buf('w');BB=buf('b');
   ch.busT=AC.createGain();ch.busT.connect(mestre);ch.busP=AC.createGain();ch.busP.gain.value=0;ch.busP.connect(mestre);
   ch.vento=canal(BB,[filt('bandpass',420,.7)],.5,ch.busT);
@@ -778,6 +780,25 @@ function trovao(forca){
 }
 function blip(){if(!AC||!som)return;const n=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.frequency.value=P.id==='praia'?660:520;
   g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.0001,n+.6);o.connect(g);g.connect(mestre);o.start(n);o.stop(n+.65)}
+/* ---------- banda sonora (ficheiros por plano) ---------- */
+const MUSICA={praia:'musica_praia.mp3'};
+let musVol=.7,musEl=null,musFade=null,musNivel=null,musId=null,musLeg=false;
+function ligaMusica(dest){
+  musEl=new Audio();musEl.loop=true;musEl.preload='auto';musEl.playsInline=true;
+  try{const src=AC.createMediaElementSource(musEl);musFade=AC.createGain();musFade.gain.value=0;musNivel=AC.createGain();
+    src.connect(musFade);musFade.connect(musNivel);musNivel.connect(dest);nivelMusica(0)}catch(e){musFade=null}
+  /* desbloquear o elemento no gesto do utilizador (iPhone) */
+  musEl.src=MUSICA.praia;musEl.play().then(()=>{if(!musId)musEl.pause()}).catch(()=>{});
+}
+function nivelMusica(tc=.6){if(musNivel)musNivel.gain.setTargetAtTime(musVol*(musLeg?.72:1),AC.currentTime,tc)}
+function tocaMusica(id,entra=3){
+  if(!musEl||!MUSICA[id])return;musId=id;
+  if(!musEl.src.endsWith(MUSICA[id]))musEl.src=MUSICA[id];
+  musEl.currentTime=0;musEl.play().catch(()=>{});
+  if(musFade){musFade.gain.cancelScheduledValues(AC.currentTime);musFade.gain.setValueAtTime(0,AC.currentTime);musFade.gain.setTargetAtTime(1,AC.currentTime,entra)}
+}
+function paraMusica(tc=.4){musId=null;if(!musEl)return;if(musFade)musFade.gain.setTargetAtTime(0,AC.currentTime,tc);setTimeout(()=>{if(!musId)musEl.pause()},tc*5000)}
+function baixaMusica(v,tc=.8){if(musFade&&musId)musFade.gain.setTargetAtTime(v,AC.currentTime,tc)}
 function somGeral(v,tc=.8){if(AC)mestre.gain.setTargetAtTime(som?v*(typeof vol==='number'?vol/.9:1):0,AC.currentTime,tc)}
 
 /* ---------- legenda ---------- */
@@ -788,13 +809,13 @@ function legendaAnterior(){
   fila=seqLista.slice(alvoI).map((txt,k)=>({txt,seq:true,idx:alvoI+k}));if(atual)atual.fim=t;falaAte=t;escondeLeg();$('#bSeguir').classList.remove('pronto');
 }
 function narra(lista){seqLista=lista;seqTotal=lista.length;fila=lista.map((txt,i)=>({txt,seq:true,idx:i}));atual=null;falaAte=t}
-function escondeLeg(){clearTimeout(mostraFala.t);leg.classList.add('off');leg.classList.remove('on')}
+function escondeLeg(){if(musLeg){musLeg=false;nivelMusica(1.5)}clearTimeout(mostraFala.t);leg.classList.add('off');leg.classList.remove('on')}
 function mostraFala(){
   if(atual&&atual.seq&&t>=atual.fim&&atual.idx===seqTotal-1&&!fila.length){atual.feito=true;$('#bSeguir').classList.add('pronto')}
   if(t<falaAte||!fila.length)return;const item=fila.shift();atual=item;
   leg.classList.remove('on','off');legP.textContent=item.txt;
   const sq=leg.querySelector('.seq');sq.innerHTML=item.seq?Array.from({length:seqTotal},(_,i)=>`<i class="${i<=item.idx?'v':''}"></i>`).join(''):'';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>leg.classList.add('on')));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>leg.classList.add('on')));if(!musLeg){musLeg=true;nivelMusica(.8)}
   const d=Math.max(item.hold||0,3.4+item.txt.length*.065);item.fim=t+d;falaAte=t+d+.7;
   clearTimeout(mostraFala.t);mostraFala.t=setTimeout(escondeLeg,d*1000);
 }
@@ -893,15 +914,15 @@ function passoFinal(){
   if(e>10.6&&!pf.z){pf.z=1;const bp=branco.querySelector('p');bp.style.opacity=0;setTimeout(()=>{bp.textContent='De manhã';bp.style.opacity=1},1300)}
   if(e>13.2&&!pf.e){pf.e=1;branco.querySelector('p').style.opacity=0;acordarT=t;
     branco.style.transition='opacity 1.4s ease';branco.style.opacity=0;
-    if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}somGeral(.9,1.6)}
+    if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}somGeral(.9,1.6);tocaMusica('praia',2.5)}
   if(e>15.5&&!pf.g){pf.g=1;mostraPlaca('De manhã · a praia')}
   if(e>18.5&&!pf.f){pf.f=1;fase='explora';narra(P.legendas)}
 }
-function terminar(){fase='fim';somGeral(.25,1.5);setTimeout(()=>$('#fim').classList.remove('fora'),600)}
+function terminar(){fase='fim';somGeral(.25,1.5);baixaMusica(.45,2);setTimeout(()=>$('#fim').classList.remove('fora'),600)}
 function comeca(salto){
   iniciaAudio();if(AC&&AC.state==='suspended')AC.resume();
   if(AC){ch.busT.gain.setValueAtTime(1,AC.currentTime);ch.busP.gain.setValueAtTime(0,AC.currentTime)}
-  somGeral(.9,1.2);branco.style.transition='none';branco.style.opacity=0;
+  somGeral(.9,1.2);paraMusica(.2);branco.style.transition='none';branco.style.opacity=0;
   $('#entrada').classList.add('fora');$('#fim').classList.add('fora');
   hud.classList.remove('escondido');
   setTimeout(()=>aviso(toque?'Arrasta para olhar · podes inclinar o aparelho':'Arrasta para olhar à volta',3600),1800);
@@ -910,7 +931,7 @@ function comeca(salto){
   if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);  storm=stormAlvo=1;entraPlano(0);proxRaio=t+2;
   if(salto){P.hot.forEach((_,i)=>vistos.add(i));pontos();fase='explora';iniciaFinal()}
   else if(location.hash.includes('praia')){entraPlano(1);acordarT=t-30;acordarEw=1;fase='explora';narra(P.legendas);
-    if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}}
+    if(AC){ch.busT.gain.setValueAtTime(0,AC.currentTime);ch.busP.gain.setValueAtTime(1,AC.currentTime)}tocaMusica('praia',1.5)}
   else{fase='explora';narra(P.legendas);mostraPlaca(P.lugar.replace(' · noite','').replace(' · manhã',''));falaAte=t+3.2}
 }
 
@@ -1011,11 +1032,12 @@ $('#bMenu').addEventListener('click',e=>{e.stopPropagation();painel.hidden=!pain
 $('#pPaisagem').addEventListener('click',()=>{toggleHud()});
 $('#pEcra').addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():app.requestFullscreen().catch(()=>{})}catch(e){}});
 let esc=1,vol=.9;
-const guardaPref=()=>{try{localStorage.setItem('fernao-pref',JSON.stringify({esc,vol,red:reduz}))}catch(e){}};
-try{const pr=JSON.parse(localStorage.getItem('fernao-pref')||'{}');if(pr.esc)esc=pr.esc;if(pr.vol!=null)vol=pr.vol;if(pr.red)reduz=true}catch(e){}
+const guardaPref=()=>{try{localStorage.setItem('fernao-pref',JSON.stringify({esc,vol,mus:musVol,red:reduz}))}catch(e){}};
+try{const pr=JSON.parse(localStorage.getItem('fernao-pref')||'{}');if(pr.esc)esc=pr.esc;if(pr.vol!=null)vol=pr.vol;if(pr.mus!=null)musVol=pr.mus;if(pr.red)reduz=true}catch(e){}
 const aplicaEsc=()=>{document.documentElement.style.setProperty('--esc',esc);$('#pLetra').textContent=Math.round(esc*100)+'%'};aplicaEsc();
 $('#pMenos').addEventListener('click',()=>{esc=Math.max(.8,+(esc-.1).toFixed(2));aplicaEsc();guardaPref()});
 $('#pMais').addEventListener('click',()=>{esc=Math.min(1.5,+(esc+.1).toFixed(2));aplicaEsc();guardaPref()});
+$('#pMus').value=Math.round(musVol*100);$('#pMus').addEventListener('input',e=>{musVol=e.target.value/100;if(AC)nivelMusica(.15);guardaPref()});
 $('#pVol').value=Math.round(vol*100);$('#pVol').addEventListener('input',e=>{vol=e.target.value/100;som=vol>0;somGeral(fase==='fim'?.25:.9,.2);guardaPref()});
 $('#pBal').checked=reduz;$('#pBal').addEventListener('change',e=>{reduz=e.target.checked;guardaPref()});
 $('#bExplorar').addEventListener('click',e=>{explorar=!explorar;e.currentTarget.setAttribute('aria-pressed',String(explorar));if(!explorar){dwell=0;retic.style.opacity=0}});
@@ -1025,11 +1047,11 @@ let pausa=null;
 function menuPrincipal(){
   if(fase!=='explora')return;painel.hidden=true;pausa={fase};fase='pausa';
   $('#entrada').classList.remove('fora');hud.classList.add('escondido');$('#bEntrar').textContent='Continuar';$('#bRecomecar').hidden=false;
-  escondeLeg();somGeral(.3,.4);
+  escondeLeg();somGeral(.3,.4);baixaMusica(.35,.4);
 }
 $('#pPrincipal').addEventListener('click',menuPrincipal);
 $('#bEntrar').addEventListener('click',()=>{
-  if(pausa){fase=pausa.fase;pausa=null;$('#entrada').classList.add('fora');hud.classList.remove('escondido');somGeral(.9,.6);falaAte=t;if(atual&&atual.seq&&atual.fim>t)fila.unshift(atual);return}
+  if(pausa){fase=pausa.fase;pausa=null;$('#entrada').classList.add('fora');hud.classList.remove('escondido');somGeral(.9,.6);baixaMusica(1,.6);falaAte=t;if(atual&&atual.seq&&atual.fim>t)fila.unshift(atual);return}
   comeca(false)});
 $('#bRecomecar').addEventListener('click',()=>{pausa=null;$('#bEntrar').textContent='Começar';$('#bRecomecar').hidden=true;comeca(false)});
 $('#bSalto').addEventListener('click',()=>comeca(true));
