@@ -30,10 +30,11 @@ body{margin:0;background:var(--abismo);color:var(--papel);font-family:var(--seri
   padding:7px 12px;border-radius:2px;opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;z-index:4}
 #aviso.on{opacity:1}
 .btn.ico{padding:8px 10px;display:inline-grid;place-items:center}
-.nav{display:flex;gap:8px;align-items:center;pointer-events:auto}
+.nav{display:flex;gap:8px;align-items:center;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end}
+.sepnav{width:1px;height:22px;background:rgba(233,227,213,.25);margin:0 4px}
 #bExplorar[aria-pressed="true"]{border-color:#fff;color:#fff;background:rgba(255,255,255,.12)}
 #bSeguir,#bVoltar{pointer-events:auto}
-.painel{position:absolute;right:20px;top:calc(64px + env(safe-area-inset-top,0px));width:min(300px,calc(100% - 32px));z-index:6;
+.painel{position:absolute;right:20px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px));z-index:6;
   background:rgba(10,15,22,.92);border:1px solid rgba(233,227,213,.18);border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:2px;
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--papel)}
 .painel .linha{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 8px;background:none;border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;text-align:left;cursor:pointer;border-radius:2px}
@@ -61,7 +62,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #palp .pb{bottom:0;border-radius:50% 50% 0 0/38% 38% 0 0;transform:translateY(105%)}
 .vin{position:absolute;left:0;right:0;pointer-events:none;transition:opacity .6s}
 .vin.topo{top:0;height:min(22vh,170px);background:linear-gradient(180deg,rgba(8,11,17,.8),rgba(8,11,17,0))}
-.vin.base{bottom:0;height:min(50vh,430px);background:linear-gradient(0deg,rgba(8,11,17,.9),rgba(8,11,17,.55) 40%,rgba(8,11,17,0))}
+.vin.base{bottom:0;height:min(54vh,460px);background:linear-gradient(0deg,rgba(8,11,17,.95),rgba(8,11,17,.7) 38%,rgba(8,11,17,.3) 70%,rgba(8,11,17,0))}
 #branco{position:absolute;inset:0;background:#F4F2EC;opacity:0;pointer-events:none}
 #branco p{position:absolute;left:0;right:0;top:50%;margin:0;transform:translateY(-50%);text-align:center;
   font-family:var(--serif);font-style:italic;font-size:clamp(1.3rem,2.6vw,1.9rem);letter-spacing:.02em;color:var(--tinta);opacity:0;transition:opacity 1.2s;padding-inline:20px}
@@ -73,9 +74,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hud .topo{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
   padding:calc(16px + env(safe-area-inset-top,0px)) 20px 0}
 .serie{display:flex;flex-direction:column;gap:6px;min-width:0}
-.serie .nome{display:flex;align-items:center;gap:10px;font-family:var(--caps);font-weight:700;font-size:16px;letter-spacing:.2em;text-shadow:0 1px 8px #000;text-transform:uppercase;color:var(--papel)}
-.serie .ep{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel);text-shadow:0 1px 8px #000;padding-left:34px}
-.rosa{width:24px;height:24px;color:var(--lanterna);flex:none}
+.serie .nome{display:flex;align-items:center;gap:10px;font-family:var(--caps);font-weight:700;font-size:21px;letter-spacing:.2em;text-shadow:0 1px 8px #000;text-transform:uppercase;color:var(--papel)}
+.serie .ep{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel);text-shadow:0 1px 8px #000;padding-left:46px;font-size:12px}
+.rosa{width:34px;height:34px;color:var(--lanterna);flex:none}
 .serie .ep b{color:var(--lanterna);font-weight:500}
 .dir{display:flex;gap:8px;align-items:center;pointer-events:auto}
 .lugar{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--papel-fraco);text-align:right;padding-right:6px;line-height:1.6}
@@ -172,6 +173,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 .titulo .fones{margin-top:1.2rem;display:flex;align-items:center;gap:8px;
   font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel-fraco)}
 @media (max-height:640px){.titulo .contexto{display:none}}
+@media (max-height:640px){.cartao{gap:.8rem;padding-block:4vh;overflow-y:auto}.cartao.titulo h1{font-size:clamp(1.9rem,8vh,3.4rem);max-width:none}.titulo .menu{margin-top:.4rem}.titulo .menu .item{padding:4px 12px}}
 .hud.escondido{opacity:0;pointer-events:none}
 .cartao h1{font-family:var(--caps);font-weight:700;font-size:clamp(2.4rem,7.5vw,5.8rem);line-height:.98;letter-spacing:.02em;margin:0;text-wrap:balance}
 .cartao h2{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(1.6rem,3.6vw,2.6rem);line-height:1.3;margin:0;max-width:24ch;text-wrap:balance}
@@ -189,7 +191,9 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 
 @media (max-width:640px){
   .lugar{display:none}
-  .serie .nome{font-size:11px}
+  .serie .nome{font-size:15px}
+  .rosa{width:26px;height:26px}
+  .serie .ep{padding-left:36px;font-size:10px}
   .hud .topo{padding-inline:14px}
   .hud .base{left:14px;right:14px}
   #bEcra{display:none}
@@ -216,11 +220,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
         <span class="nome"><svg class="rosa" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/><path d="M12 6.5 12.9 11.1 17.5 12 12.9 12.9 12 17.5 11.1 12.9 6.5 12 11.1 11.1Z" fill="var(--abismo)" transform="rotate(45 12 12)" opacity=".55"/></svg>Dezassete vezes vendido</span>
         <span class="ep" id="lugar">Ilha dos Ladrões · Outono de 1540 · noite</span>
       </div>
-      <div class="dir">
-        <button class="btn so-hud" id="bGiro" type="button" aria-pressed="false" hidden title="Olhar inclinando o aparelho">Inclinar</button>
-        <button class="btn so-hud ico" id="bHud" type="button" title="Só paisagem (H)" aria-label="Só paisagem"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="btn so-hud ico" id="bMenu" type="button" aria-expanded="false" aria-controls="painel" title="Menu" aria-label="Menu"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      </div>
+      <div class="dir"></div>
     </div>
     <div class="base so-hud">
       <div class="progresso">
@@ -230,6 +230,10 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
         <button class="btn" id="bMapa" type="button" disabled title="Mapa · em breve"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
       </div>
       <div class="nav">
+        <button class="btn so-hud" id="bGiro" type="button" aria-pressed="false" hidden title="Olhar inclinando o aparelho">Inclinar</button>
+        <button class="btn so-hud ico" id="bHud" type="button" title="Só paisagem (H)" aria-label="Só paisagem"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="btn so-hud ico" id="bMenu" type="button" aria-expanded="false" aria-controls="painel" title="Menu" aria-label="Menu"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span class="sepnav"></span>
         <button class="btn" id="bExplorar" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Explorar</button>
         <button class="btn" id="bVoltar" type="button" aria-label="Legenda anterior">‹ Voltar</button>
         <button class="btn" id="bSeguir" type="button">Continuar ›</button>
@@ -238,6 +242,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   </div>
 
   <div class="painel" id="painel" hidden>
+    <button class="linha" id="pPrincipal" type="button">Menu principal</button>
     <button class="linha" id="pMapa" type="button" disabled>Onde estou? <small>mapa · em breve</small></button>
     <button class="linha" id="pPaisagem" type="button">Só paisagem</button>
     <div class="sep"></div>
@@ -260,6 +265,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
     <p class="contexto">Outono de 1540, mar da China. Há sete meses e meio que António de Faria anda atrás de Coja Acém, o corsário de quem jurou vingar-se. Os homens estão cansados e querem as suas partes. Quatro juncos esperam a monção numa ilha a que chamam dos Ladrões. Fernão vai num deles.</p>
     <nav class="menu" aria-label="Menu">
       <button class="cta" id="bEntrar" type="button" disabled>A carregar…</button>
+      <button class="item" id="bRecomecar" type="button" hidden>Recomeçar</button>
       <button class="item" type="button" disabled>Episódios <small>em breve</small></button>
       <button class="item" type="button" disabled>Opções <small>em breve</small></button>
       <button class="item" type="button" disabled>Créditos <small>em breve</small></button>
@@ -990,7 +996,7 @@ $('#bGiro').addEventListener('click',async e=>{
 });
 addEventListener('keydown',e=>{
   if(e.key==='h'||e.key==='H'){toggleHud();return}
-  if(e.key==='Escape'){document.body.classList.remove('paisagem');painel.hidden=true;return}
+  if(e.key==='Escape'){if(!painel.hidden||document.body.classList.contains('paisagem')){document.body.classList.remove('paisagem');painel.hidden=true}else menuPrincipal();return}
   if(e.key==='ArrowLeft'&&e.shiftKey){legendaAnterior();return}
   if(fase!=='explora')return;
   if(e.key===' '||e.key==='Enter'){if(!e.target.closest('button')){e.preventDefault();if(!proximaLegenda())avancar()}return}
@@ -1015,7 +1021,17 @@ $('#pBal').checked=reduz;$('#pBal').addEventListener('change',e=>{reduz=e.target
 $('#bExplorar').addEventListener('click',e=>{explorar=!explorar;e.currentTarget.setAttribute('aria-pressed',String(explorar));if(!explorar){dwell=0;retic.style.opacity=0}});
 $('#bVoltar').addEventListener('click',()=>{if(fase==='explora')legendaAnterior()});
 $('#bSeguir').addEventListener('click',()=>{if(fase!=='explora')return;if(!proximaLegenda())avancar()});
-$('#bEntrar').addEventListener('click',()=>comeca(false));
+let pausa=null;
+function menuPrincipal(){
+  if(fase!=='explora')return;painel.hidden=true;pausa={fase};fase='pausa';
+  $('#entrada').classList.remove('fora');hud.classList.add('escondido');$('#bEntrar').textContent='Continuar';$('#bRecomecar').hidden=false;
+  escondeLeg();somGeral(.3,.4);
+}
+$('#pPrincipal').addEventListener('click',menuPrincipal);
+$('#bEntrar').addEventListener('click',()=>{
+  if(pausa){fase=pausa.fase;pausa=null;$('#entrada').classList.add('fora');hud.classList.remove('escondido');somGeral(.9,.6);falaAte=t;if(atual&&atual.seq&&atual.fim>t)fila.unshift(atual);return}
+  comeca(false)});
+$('#bRecomecar').addEventListener('click',()=>{pausa=null;$('#bEntrar').textContent='Começar';$('#bRecomecar').hidden=true;comeca(false)});
 $('#bSalto').addEventListener('click',()=>comeca(true));
 $('#bDenovo').addEventListener('click',()=>comeca(false));
 $('#bTransicao').addEventListener('click',()=>comeca(true));
