@@ -130,6 +130,15 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   transition:opacity 1.4s ease;cursor:default;z-index:5}
 .cartao.fora{opacity:0;pointer-events:none}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--lanterna)}
+.titulo{align-items:center;text-align:center;gap:1.1rem;background:radial-gradient(80% 60% at 50% 45%,rgba(8,11,17,.55),rgba(8,11,17,.92))}
+.titulo .rosaG{width:46px;height:46px;color:var(--lanterna);opacity:.9}
+.titulo h1{font-size:clamp(2.2rem,6.4vw,5.2rem);letter-spacing:.06em;text-transform:uppercase;text-shadow:0 2px 30px rgba(0,0,0,.6)}
+.titulo .ep{font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--lanterna)}
+.titulo .acoes{justify-content:center;margin-top:1.4rem}
+.titulo .cta{padding:15px 44px}
+.titulo .fones{position:absolute;left:0;right:0;bottom:calc(5vh + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--papel-fraco)}
+.hud.escondido{opacity:0;pointer-events:none}
 .cartao h1{font-family:var(--caps);font-weight:700;font-size:clamp(2.4rem,7.5vw,5.8rem);line-height:.98;letter-spacing:.02em;margin:0;text-wrap:balance}
 .cartao h2{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(1.6rem,3.6vw,2.6rem);line-height:1.3;margin:0;max-width:24ch;text-wrap:balance}
 .cartao p{margin:0;max-width:52ch;color:var(--papel-fraco);font-size:clamp(1rem,1.6vw,1.12rem);line-height:1.65}
@@ -167,7 +176,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <svg id="retic" viewBox="0 0 46 46" aria-hidden="true"><circle class="b" cx="23" cy="23" r="19"/><circle class="p" cx="23" cy="23" r="19" stroke-dasharray="0 120"/></svg>
   <div id="legenda" aria-live="polite"><span class="quem">Fernão</span><p></p></div>
 
-  <div class="hud" id="hud">
+  <div class="hud escondido" id="hud">
     <div class="topo">
       <div class="serie so-hud">
         <span class="nome"><svg class="rosa" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/><path d="M12 6.5 12.9 11.1 17.5 12 12.9 12.9 12 17.5 11.1 12.9 6.5 12 11.1 11.1Z" fill="var(--abismo)" transform="rotate(45 12 12)" opacity=".55"/></svg>Dezassete vezes vendido</span>
@@ -195,16 +204,15 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
   <div id="aviso" role="status"></div>
   <div id="branco"><p>De manhã</p></div>
 
-  <section class="cartao" id="entrada">
-    <div class="eyebrow">Dezassete vezes vendido · teste de transição</div>
-    <h1>Da tempestade à praia</h1>
-    <p>Dois planos seguidos do episódio «O milhano». Olha à volta, toca nos pontos âmbar ou demora o olhar neles. Quando acabares a tempestade, o clarão leva-te à manhã seguinte.</p>
-    <div class="legendaTipos nota"><span>Balão · fala</span><span>Legenda · narrador</span></div>
+  <section class="cartao titulo" id="entrada">
+    <svg class="rosaG" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z" fill="currentColor"/></svg>
+    <h1>Dezassete vezes vendido</h1>
+    <div class="ep">Episódio VI · O milhano</div>
     <div class="acoes">
       <button class="cta" id="bEntrar" type="button" disabled>A carregar…</button>
-      <button class="cta sec" id="bSalto" type="button" disabled>Ver só a transição</button>
+      <button class="cta sec" id="bSalto" type="button" disabled hidden>Ver só a transição</button>
     </div>
-    <div class="nota">Com som · auscultadores · arrasta para olhar · no iPhone/iPad podes inclinar ·<kbd>←</kbd><kbd>→</kbd> olhar · <kbd>Espaço</kbd> avançar · <kbd>H</kbd> HUD</div>
+    <div class="fones"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>Melhor com auscultadores</div>
   </section>
 
   <section class="cartao fora" id="fim">
@@ -432,7 +440,7 @@ const camImgs={};let totalImgs=PLANOS.length+PLANOS.reduce((n,p)=>n+(p.camadas?p
 const carregou=()=>{if(++carregadas===totalImgs)pronto()},falhou=()=>{$('#bEntrar').textContent='Imagem em falta'};
 PLANOS.forEach(p=>{const im=new Image();im.onload=()=>{imgs[p.id]=im;carregou()};im.onerror=falhou;im.src=p.img;
   (p.camadas||[]).forEach(c=>{const i2=new Image();i2.onload=()=>{camImgs[c.id]=i2;carregou()};i2.onerror=falhou;i2.src=c.src})});
-function pronto(){['#bEntrar','#bSalto'].forEach(s=>$(s).disabled=false);$('#bEntrar').textContent='Entrar'}
+function pronto(){['#bEntrar','#bSalto'].forEach(s=>$(s).disabled=false);$('#bEntrar').textContent='Começar'}
 
 function resize(){
   DPR=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;
@@ -815,6 +823,8 @@ function comeca(salto){
   if(AC){ch.busT.gain.setValueAtTime(1,AC.currentTime);ch.busP.gain.setValueAtTime(0,AC.currentTime)}
   somGeral(.9,1.2);branco.style.transition='none';branco.style.opacity=0;
   $('#entrada').classList.add('fora');$('#fim').classList.add('fora');
+  hud.classList.remove('escondido');
+  setTimeout(()=>aviso(toque?'Arrasta para olhar · podes inclinar o aparelho':'Arrasta para olhar à volta',3600),1800);
   acordarT=-1;acordarEw=1;afundT=-1;branco.style.background='';branco.querySelector('p').style.color='';
   {const ag=$('#agua');ag.style.transition='none';ag.style.opacity=0;ag.style.transform='translateY(105%)'}
   if(AC&&abafa)abafa.frequency.setValueAtTime(20000,AC.currentTime);  storm=stormAlvo=1;entraPlano(0);proxRaio=t+2;
