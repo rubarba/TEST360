@@ -29,7 +29,7 @@ body{margin:0;background:var(--abismo);color:var(--papel);font-family:var(--seri
   padding:7px 12px;border-radius:2px;opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;z-index:4}
 #aviso.on{opacity:1}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#fx{pointer-events:none}
+#fx,#lay{pointer-events:none}
 #palp{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 #palp i{position:absolute;left:-10%;right:-10%;height:62%;background:#000;will-change:transform}
 #palp .pt{top:0;border-radius:0 0 50% 50%/0 0 38% 38%;transform:translateY(-105%)}
@@ -150,6 +150,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 
 <div id="app">
   <canvas id="cv" aria-label="Vista panorâmica, pelos olhos do Fernão"></canvas>
+  <canvas id="lay"></canvas>
   <canvas id="fx"></canvas>
   <div id="palp" aria-hidden="true"><i class="pt"></i><i class="pb"></i></div>
   <div class="vin topo so-hud"></div>
@@ -228,7 +229,16 @@ const PLANOS=[
    {x:.70,y:.66,r:.22,tipo:'legenda',t:'Não é chuva. É o mar por cima do convés, lençóis inteiros que levam o que não estiver preso.'},
    {x:.90,y:.40,r:.18,tipo:'legenda',t:'Rocha a estibordo. Ninguém a viu até estar em cima de nós.'}
   ]},
- {id:'praia', img:'praia.jpg', lugar:'Ilha dos Ladrões<br>Outono de 1540 · manhã', ini:{x:-.05,y:.1},
+ {id:'praia', img:'praia_fundo.jpg',
+  camadas:[
+   {id:'longe',src:'c_longe.png',box:[0.24649,0.365,0.25551,0.416]},
+   {id:'deitado',src:'c_deitado.png',box:[0.17,0.45815,0.26,0.50085]},
+   {id:'andar',src:'c_andar.png',box:[0.29097,0.405,0.32703,0.591]},
+   {id:'agachado',src:'c_agachado.png',box:[0.0999,0.483,0.1561,0.631]},
+   {id:'sentado',src:'c_sentado.png',box:[0.19605,0.527,0.26395,0.719]},
+   {id:'gaivota',src:'c_gaivota.png',box:[0.477,0.59555,0.51,0.659]},
+   {id:'bandeira',src:'c_bandeira.png',box:[0.637,0.44463,0.722,0.53837]}
+  ], lugar:'Ilha dos Ladrões<br>Outono de 1540 · manhã', ini:{x:-.05,y:.1},
   intro:'Os cinquenta e três que se salvam passam a noite metidos num charco, nus, a tremer. De manhã voltam à praia.',
   hot:[
    {x:.19,y:.48,r:.12,tipo:'legenda',t:'A praia está coberta de corpos.'},
@@ -241,7 +251,7 @@ const PLANOS=[
 ];
 const ROT={balao:'fala',pormenor:'pormenor',legenda:'ver'};
 
-const app=$('#app'),fx=$('#fx'),f=fx.getContext('2d');let cv=$('#cv');
+const app=$('#app'),fx=$('#fx'),f=fx.getContext('2d'),lay=$('#lay'),LC=lay.getContext('2d');let cv=$('#cv');
 
 /* ---------- WebGL: um shader por plano ---------- */
 const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
@@ -336,17 +346,6 @@ void main(){
  off.x+=banda*vaga*.006;
  /* tábuas a boiar */
  off+=tab*vec2(sin(tm*.7+uv.y*9.)*.0012,sin(tm*.9+uv.x*14.)*.0035);
- /* bandeira ao vento: presa à esquerda, solta à direita */
- float band_=caixa(uv,vec4(.645,.72,.455,.515),.006);
- float solta=clamp((uv.x-.645)/.075,0.,1.);
- off+=band_*solta*vec2(sin(tm*3.1-uv.x*70.)*.0015,sin(tm*3.6-uv.x*90.)*.006+sin(tm*1.7-uv.x*40.)*.003);
- /* personagens: deformações pequenas no sítio */
- float wS=caixa(uv,vec4(.198,.258,.555,.705),.012),brS=sin(tm*6.2832/4.2);
- off.y+=wS*(.69-uv.y)*.035*brS;off.x+=wS*sin(tm*29.)*.0004*clamp((.69-uv.y)/.12,0.,1.);
- float wA=caixa(uv,vec4(.108,.162,.505,.625),.012);off.y+=wA*(.62-uv.y)*.022*sin(tm*1.45+1.);
- float wP=caixa(uv,vec4(.311,.511,.326,.588),.004);off.x+=wP*clamp((uv.y-.513)/.07,0.,1.)*(sin(tm*1.6)*.0022+sin(tm*3.7)*.0006);
- float wG=caixa(uv,vec4(.478,.598,.51,.657),.004),wC=caixa(uv,vec4(.494,.596,.511,.628),.003);
- float bica=pow(max(0.,sin(tm*1.15)),14.);off.y+=wG*sin(tm*1.9)*.0008-wC*bica*.006;off.x+=-wC*bica*.003+wC*sin(tm*.7)*.0012;
  /* nuvens */
  float sky=ss(.31,.27,uv.y)*(1.-caixa(uv,vec4(0.,.28,0.,.9),.01))*(1.-caixa(uv,vec4(.84,1.,0.,.9),.01))*(1.-caixa(uv,vec4(.26,.37,.13,.34),.01))*(1.-caixa(uv,vec4(.34,.50,.16,.34),.01))*(1.-caixa(uv,vec4(.80,.89,.24,.34),.01));
  vec2 cw=vec2(fbm(uv*vec2(2.6,5.)+vec2(tm*.016,tm*.003))-.5, fbm(uv*vec2(3.2,6.)+vec2(5.,tm*.012))-.5);
@@ -417,13 +416,15 @@ let vistos=new Set(),dwell=0,dwellIdx=-1,falaAte=0,fila=[],ativo=null,ativoAte=0
 
 /* ---------- carregar ---------- */
 let carregadas=0;
-PLANOS.forEach(p=>{const im=new Image();im.onload=()=>{imgs[p.id]=im;if(++carregadas===PLANOS.length)pronto()};
-  im.onerror=()=>{$('#bEntrar').textContent='Imagem em falta'};im.src=p.img});
+const camImgs={};let totalImgs=PLANOS.length+PLANOS.reduce((n,p)=>n+(p.camadas?p.camadas.length:0),0);
+const carregou=()=>{if(++carregadas===totalImgs)pronto()},falhou=()=>{$('#bEntrar').textContent='Imagem em falta'};
+PLANOS.forEach(p=>{const im=new Image();im.onload=()=>{imgs[p.id]=im;carregou()};im.onerror=falhou;im.src=p.img;
+  (p.camadas||[]).forEach(c=>{const i2=new Image();i2.onload=()=>{camImgs[c.id]=i2;carregou()};i2.onerror=falhou;i2.src=c.src})});
 function pronto(){['#bEntrar','#bSalto'].forEach(s=>$(s).disabled=false);$('#bEntrar').textContent='Entrar'}
 
 function resize(){
   DPR=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;
-  [cv,fx].forEach(c=>{c.width=Math.round(W*DPR);c.height=Math.round(H*DPR)});
+  [cv,fx,lay].forEach(c=>{c.width=Math.round(W*DPR);c.height=Math.round(H*DPR)});
   f.setTransform(DPR,0,0,DPR,0,0);if(gl)gl.viewport(0,0,cv.width,cv.height);
   gotas=Array.from({length:Math.min(Math.round(W*H/4500),480)},()=>novaGota());
 }
@@ -547,15 +548,47 @@ function mar2D(c,im){
   if(P.id==='praia'){
     /* tábuas a boiar */
     const [a,b,cc,d]=[.66,.68,.87,.85];c.drawImage(im,a*Wi,b*Hi,(cc-a)*Wi,(d-b)*Hi,a*Wi,b*Hi+Math.sin(t*.9)*Hi*.003,(cc-a)*Wi,(d-b)*Hi);
-    /* homem sentado a respirar e a tremer; o agachado também respira */
-    const resp=(bx,ins,pivot,amp,fase_)=>{const [a,b,cc,d]=bx,x=a*Wi,y=b*Hi,w=(cc-a)*Wi,h=(d-b)*Hi,k=amp*(1+Math.sin(t*fase_[0]+fase_[1])),hh=h*(1+k);
-      c.drawImage(im,x,y,w,h,x+(ins?Math.sin(t*29)*.6:0),y+h-hh,w,hh)};
-    resp([.198,.555,.258,.69],true,.69,.012,[6.2832/4.2,0]);resp([.108,.505,.162,.62],false,.62,.008,[1.45,1]);
-    /* pano a balançar: linhas deslocadas, mais em baixo */
-    {const x=.311*Wi,y0=.513*Hi,w=.015*Wi,h=.075*Hi;for(let yy=0;yy<h;yy+=2){const k=yy/h;c.drawImage(im,x,y0+yy,w,2,x+(Math.sin(t*1.6)*.0022+Math.sin(t*3.7)*.0006)*Wi*k,y0+yy,w,2)}}
-    /* bandeira: tiras verticais a ondular, mais na ponta solta */
-    const fx0=.645*Wi,fx1=.72*Wi,fy0=.455*Hi,fh=.06*Hi,st=3;
-    for(let x=fx0;x<fx1;x+=st){const k=(x-fx0)/(fx1-fx0);c.drawImage(im,x,fy0,st+1,fh,x,fy0+(Math.sin(t*3.6-x*.06)*.006+Math.sin(t*1.7-x*.03)*.003)*Hi*k,st+1,fh)}
+  }
+}
+/* ---------- camadas (PNG) por cima do fundo, com a mesma câmara ---------- */
+let assustaT=-99;
+function camadas(){
+  LC.setTransform(1,0,0,1,0,0);LC.clearRect(0,0,lay.width,lay.height);
+  if(!P.camadas||fase==='entrada')return;
+  const bg=imgs[P.id];if(!bg)return;const Wi=bg.width,Hi=bg.height,sc=H/viewH/Hi;
+  LC.setTransform(DPR,0,0,DPR,0,0);LC.translate(W/2,H/2);LC.rotate(roll);LC.scale(sc,sc);LC.translate(-cx*Wi,-cy*Hi);
+  const tp=acordarT<0?t:Math.max(0,t-acordarT-4);
+  for(const c of P.camadas){const im=camImgs[c.id];if(!im)continue;
+    const [u0,v0,u1,v1]=c.box,x=u0*Wi,y=v0*Hi,w=(u1-u0)*Wi,h=(v1-v0)*Hi,bx=x+w/2,by=y+h;
+    LC.save();
+    if(c.id==='sentado'){ /* respira devagar e treme */
+      const br=Math.sin(t*6.2832/4.2);LC.translate(bx+Math.sin(t*29)*.5,by);LC.rotate(.006*Math.sin(t*.5));LC.scale(1,1+.009*(br+1));LC.drawImage(im,-w/2,-h,w,h)}
+    else if(c.id==='agachado'){
+      LC.translate(bx,by);LC.rotate(.008*Math.sin(t*.8));LC.scale(1,1+.006*(Math.sin(t*1.45+1)+1));LC.drawImage(im,-w/2,-h,w,h)}
+    else if(c.id==='longe'){ /* figura ao longe a afastar-se devagar */
+      const p=Math.min(1,tp/60);LC.translate(bx-p*.03*Wi,by-Math.abs(Math.sin(tp*3.6))*1.4*(p<1?1:0));LC.scale(1-.15*p,1-.15*p);LC.drawImage(im,-w/2,-h,w,h)}
+    else if(c.id==='andar'){ /* caminha uns passos na nossa direção e pára */
+      const p=Math.min(1,tp/24),e=p*p*(3-2*p),anda=p<1?1:0,ph=tp*4.2;
+      LC.translate(bx-e*.012*Wi,by+e*.035*Hi-Math.abs(Math.sin(ph))*4*anda);LC.rotate(.012*Math.sin(ph)*anda);
+      const k=1+.22*e;LC.scale(k,k*(1+(1-anda)*.005*(Math.sin(t*1.5)+1)));
+      /* corpo sem o pano; o pano balança à parte, preso na mão */
+      const cxp=.675,cyp=.53;LC.save();LC.beginPath();LC.rect(-w/2,-h,w,h);LC.rect(-w/2+w*cxp,-h+h*cyp,w*(1-cxp)+2,h*(1-cyp));LC.clip('evenodd');
+      LC.drawImage(im,-w/2,-h,w,h);LC.restore();
+      const iw=im.width,ih=im.height,st=2;
+      for(let yy=cyp*h;yy<h;yy+=st){const k2=(yy-cyp*h)/((1-cyp)*h),dx=(Math.sin(t*1.8+anda*ph)*.06+Math.sin(t*4.1)*.015)*w*k2;
+        LC.drawImage(im,cxp*iw,yy/h*ih,(1-cxp)*iw,st/h*ih+1,-w/2+w*cxp+dx,-h+yy,w*(1-cxp),st+.5)}}
+    else if(c.id==='gaivota'){ /* bica de vez em quando; ao tocar-lhe dá uns saltos */
+      const bica=Math.pow(Math.max(0,Math.sin(t*1.15)),14),ea=t-assustaT;let dx=0,dy=0;
+      if(ea>=0&&ea<1.6){const n=Math.floor(ea/.4),f_=(ea%.4)/.4;dx=(n+f_)*.006*Wi;dy=-Math.sin(f_*Math.PI)*.012*Hi}
+      else if(assustaT>0&&ea>=1.6)dx=4*.006*Wi;
+      LC.translate(bx+dx,by+dy+Math.sin(t*1.9)*.6);LC.rotate(bica*.22);LC.drawImage(im,-w/2,-h,w,h)}
+    else if(c.id==='bandeira'){ /* ondula em colunas, presa à esquerda */
+      const iw=im.width,ih=im.height,st=3;
+      for(let xx=0;xx<w;xx+=st){const k2=Math.max(0,(xx/w-.07)/.93),
+        dy=(Math.sin(t*3.4-k2*9)*.05+Math.sin(t*1.7-k2*4)*.025)*h*k2,sy=1-.08*k2*Math.sin(t*3.4-k2*7);
+        LC.drawImage(im,xx/w*iw,0,st/w*iw+1,ih,x+xx,y+dy+h*(1-sy)/2,st+.6,h*sy)}}
+    else LC.drawImage(im,x,y,w,h);
+    LC.restore();
   }
 }
 /* olhos a abrir: fecha, entreabre, pisca, abre; desfocado no início */
@@ -568,7 +601,7 @@ function palpebras(){
     bl=Math.max(0,1-e/7)*9;}
   if(P.id==='praia'&&o===1&&encandeia>0)o=1-encandeia*.22;
   palpT.style.transform=`translateY(${-o*105}%)`;palpB.style.transform=`translateY(${o*105}%)`;
-  const fl=bl>.2?`blur(${bl.toFixed(1)}px)`:'';if(cv.style.filter!==fl)cv.style.filter=fl;
+  const fl=bl>.2?`blur(${bl.toFixed(1)}px)`:'';if(cv.style.filter!==fl){cv.style.filter=fl;lay.style.filter=fl}
 }
 /* ---------- relâmpagos ---------- */
 function raio(forca=1){let s=t;const n=2+(Math.random()*3|0);
@@ -650,6 +683,7 @@ function descobre(i){
   else if(h.tipo==='pormenor'){const im=imgs[P.id];lupa.style.backgroundImage=`url(${im.src})`;ativo={tipo:'pormenor',h};ativoAte=t+5;fala(h.t)}
   else fala(h.t);
   if(P.id==='tempestade'&&i===0)raio(1.1);
+  if(P.id==='praia'&&h.x===.49)assustaT=t;
   if(P.id==='tempestade'&&i===5){shake=.8}
   if(vistos.size===P.hot.length)$('#bSeguir').classList.add('pronto');
 }
@@ -733,7 +767,7 @@ function loop(now){
   embaloPasso(dt);calcCam(dt);
   palpebras();
   if(P.id==='tempestade'&&fase!=='entrada'&&t>proxRaio){raio(.8+Math.random()*.5);proxRaio=t+(7+Math.random()*9)/storm}
-  desenha(dt);
+  desenha(dt);camadas();
   if(fase!=='entrada'){mostraFala();atualizaInteracoes(dt);audio();if(fase==='final')passoFinal()}
   requestAnimationFrame(loop);
 }
