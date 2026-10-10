@@ -34,7 +34,7 @@ body{margin:0;background:var(--abismo);color:var(--papel);font-family:var(--seri
 .sepnav{width:1px;height:22px;background:rgba(233,227,213,.25);margin:0 4px}
 #bExplorar[aria-pressed="true"]{border-color:#fff;color:#fff;background:rgba(255,255,255,.12)}
 #bSeguir,#bVoltar{pointer-events:auto}
-.painel{position:absolute;right:20px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px));z-index:6;
+.painel{position:absolute;left:20px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px));z-index:6;
   background:rgba(10,15,22,.92);border:1px solid rgba(233,227,213,.18);border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:2px;
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--papel)}
 .painel .linha{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 8px;background:none;border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;text-align:left;cursor:pointer;border-radius:2px}
@@ -95,7 +95,7 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
 .planos i{display:block;width:34px;height:2px;background:rgba(154,166,176,.3)}
 .planos i.feito{background:var(--papel-fraco)}
 .planos i.agora{background:var(--lanterna)}
-.progresso #bMapa{pointer-events:auto;align-self:flex-start}
+.icones{display:flex;gap:8px;align-items:center;pointer-events:auto;margin-top:4px}
 .progresso #bMapa:disabled{opacity:.45;cursor:default}
 .descobertas{font-variant-numeric:tabular-nums}
 .descobertas span{color:var(--lanterna);letter-spacing:.3em}
@@ -228,13 +228,12 @@ button:focus-visible{outline:2px solid var(--lanterna);outline-offset:3px}
         <span id="planoTxt">Plano 1 de 2</span>
         <div class="planos" id="planos"><i class="agora"></i><i></i></div>
         <span id="pontos" hidden></span>
-        <button class="btn" id="bMapa" type="button" disabled title="Mapa · em breve"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
+        <div class="icones"><button class="btn ico" id="bMapa" aria-label="Mapa" type="button" disabled title="Mapa · em breve"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button><button class="btn so-hud" id="bGiro" type="button" aria-pressed="false" hidden title="Olhar inclinando o aparelho">Inclinar</button>
+        <button class="btn so-hud ico" id="bHud" type="button" title="Só paisagem (H)" aria-label="Só paisagem"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="btn so-hud ico" id="bMenu" type="button" aria-expanded="false" aria-controls="painel" title="Menu" aria-label="Menu"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
       </div>
       <div class="nav">
-        <button class="btn so-hud" id="bGiro" type="button" aria-pressed="false" hidden title="Olhar inclinando o aparelho">Inclinar</button>
-        <button class="btn so-hud ico" id="bHud" type="button" title="Só paisagem (H)" aria-label="Só paisagem"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="btn so-hud ico" id="bMenu" type="button" aria-expanded="false" aria-controls="painel" title="Menu" aria-label="Menu"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-        <span class="sepnav"></span>
+        
         <button class="btn" id="bExplorar" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Explorar</button>
         <button class="btn" id="bVoltar" type="button" aria-label="Legenda anterior">‹ Voltar</button>
         <button class="btn" id="bSeguir" type="button">Continuar ›</button>
