@@ -220,15 +220,17 @@ const $=s=>document.querySelector(s);
 
 /* ---------- planos ---------- */
 const PLANOS=[
- {id:'tempestade', img:'tempestade.jpg', lugar:'Ilha dos Ladrões<br>Outono de 1540 · noite', ini:{x:.25,y:-.05},
+ {id:'tempestade', img:'tempestade.jpg', lugar:'Ilha dos Ladrões<br>Outono de 1540 · noite', ini:{x:.1,y:-.05},
   intro:'Ao décimo segundo dia chega um temporal que não parece coisa natural.',
+  luzes:[[.32,.755,1.6],[.543,.478,.7],[.583,.52,.6],[.565,.515,.5],[.278,.522,.35],[.433,.533,.35]],
+  espuma:[[.22,.72],[.85,.55],[.93,.66],[.62,.70]],
   hot:[
-   {x:.63,y:.34,r:.20,tipo:'legenda',t:'A tempestade começa de noite, que é como começam quase todas.'},
-   {x:.33,y:.44,r:.18,tipo:'legenda',t:'Somos quatro embarcações. Faria quer ir a Sião vender a carga e repartir o dinheiro. É o que nos segura.'},
-   {x:.07,y:.56,r:.20,tipo:'balao',b:'— Cortem o mastro!',t:'Os homens do mar sobem às cordas. Os outros descem e fecham-se.'},
-   {x:.345,y:.83,r:.30,tipo:'legenda',t:'Não há lume há dois dias. A primeira coisa que morre numa tempestade é o fogão.'},
-   {x:.70,y:.66,r:.22,tipo:'legenda',t:'Não é chuva. É o mar por cima do convés, lençóis inteiros que levam o que não estiver preso.'},
-   {x:.90,y:.40,r:.18,tipo:'legenda',t:'Rocha a estibordo. Ninguém a viu até estar em cima de nós.'}
+   {x:.70,y:.30,r:.18,tipo:'legenda',t:'A tempestade começa de noite, que é como começam quase todas.'},
+   {x:.60,y:.40,r:.16,tipo:'legenda',t:'Somos quatro embarcações. Faria quer ir a Sião vender a carga e repartir o dinheiro. É o que nos segura.'},
+   {x:.10,y:.70,r:.16,tipo:'balao',b:'— Cortem o mastro!',t:'Os homens do mar agarram-se às cordas. Os outros descem e fecham-se.'},
+   {x:.32,y:.755,r:.14,tipo:'legenda',t:'Não há lume há dois dias. A primeira coisa que morre numa tempestade é o fogão.'},
+   {x:.34,y:.60,r:.12,tipo:'balao',b:'— Aqui!',t:'Um homem na água, agarrado a uma tábua. Ninguém lhe consegue chegar.'},
+   {x:.86,y:.45,r:.16,tipo:'legenda',t:'Rocha a estibordo. Ninguém a viu até estar em cima de nós.'}
   ]},
  {id:'praia', img:'praia_fundo.jpg',
   camadas:[
@@ -273,51 +275,57 @@ vec3 acaba(vec3 col){col+=(h(gl_FragCoord.xy+fract(tm*7.)*91.)-.5)*.045;
 const FS_T=COMUM+`
 vec2 junco(vec2 u,vec2 piv,float ang,float dy){
  vec2 p=u-piv;p.x*=A;float c=cos(ang),s=sin(ang);p=vec2(c*p.x-s*p.y,s*p.x+c*p.y);p.x/=A;return piv+p+vec2(0.,dy)-u;}
+float corda(vec2 u,vec2 a,vec2 b,float r){vec2 p=(u-a)*vec2(A,1.),d=(b-a)*vec2(A,1.);float h=clamp(dot(p,d)/dot(d,d),0.,1.);return ss(r*1.6,r,length(p-d*h));}
 void main(){
  vec2 uv=olhar();vec2 off=vec2(0.);
- float j1=caixa(uv,vec4(.200,.300,.295,.505),.014);
- float j2=caixa(uv,vec4(.322,.368,.395,.480),.008);
- float j3=caixa(uv,vec4(.432,.498,.330,.495),.012);
- off+=j1*junco(uv,vec2(.25,.49),sin(tm*.83)*.05*Wv,sin(tm*.83+1.3)*.0035*Wv);
- off+=j2*junco(uv,vec2(.345,.472),sin(tm*1.05+2.)*.045*Wv,sin(tm*1.05+3.1)*.0025*Wv);
- off+=j3*junco(uv,vec2(.465,.487),sin(tm*.71+4.)*.05*Wv,sin(tm*.71+5.2)*.003*Wv);
- float jb=max(j1,max(j2,j3));
- float rail=.61+(uv.x-.2)*.34;
- float m=smoothstep(.478,.50,uv.y)*smoothstep(rail-.006,rail-.035,uv.y)*smoothstep(.15,.21,uv.x);
- m*=1.-smoothstep(.80,.85,uv.x)*(1.-smoothstep(.49,.54,uv.y));
- m*=1.-jb;
- float d=clamp((uv.y-.47)/.32,0.,1.);
- float k=(.0007+.0055*d)*Wv;
+ /* juncos ao longe: cada um baloiça no seu ritmo */
+ float j1=caixa(uv,vec4(.235,.295,.37,.525),.008),j2=caixa(uv,vec4(.405,.465,.385,.53),.008),j3=caixa(uv,vec4(.525,.675,.21,.585),.012);
+ off+=j1*junco(uv,vec2(.265,.505),sin(tm*.9)*.05*Wv,sin(tm*.9+1.3)*.003*Wv);
+ off+=j2*junco(uv,vec2(.435,.515),sin(tm*1.1+2.)*.05*Wv,sin(tm*1.1+3.)*.003*Wv);
+ off+=j3*junco(uv,vec2(.60,.555),sin(tm*.75+4.)*.035*Wv,sin(tm*.75+5.)*.005*Wv);
+ /* homem na água: sobe e desce com as vagas */
+ float naufr=caixa(uv,vec4(.30,.38,.575,.635),.008);
+ off+=naufr*vec2(sin(tm*.8)*.002,sin(tm*1.3)*.006*Wv);
+ float rocha=caixa(uv,vec4(.715,.785,.37,.56),.01);
+ float cordas=max(max(corda(uv,vec2(.135,0.),vec2(.22,.745),.009),corda(uv,vec2(.175,0.),vec2(.27,.765),.009)),max(corda(uv,vec2(.06,.51),vec2(.20,.40),.009),corda(uv,vec2(.15,.39),vec2(.21,.40),.009)));
+ float jb=max(max(j1,j2),max(j3,max(naufr,rocha)));
+ /* mar */
+ float rail=.655+(uv.x-.06)*.53;
+ float m=ss(.50,.52,uv.y)*ss(rail-.005,rail-.03,uv.y)*ss(.04,.07,uv.x)*(1.-ss(.79,.82,uv.x));
+ m*=(1.-jb)*(1.-caixa(uv,vec4(.03,.21,.55,.92),.01))*(1.-cordas);
+ float d=clamp((uv.y-.50)/.35,0.,1.);
  vec2 o=vec2(n(vec2(uv.x*16.-tm*.35,uv.y*44.-tm*.9))-.5, n(vec2(uv.x*10.+tm*.25,uv.y*34.-tm*.7)+7.)-.5);
  o+=.35*vec2(sin(uv.x*46.+tm*1.3+uv.y*22.),cos(uv.y*70.-tm*1.8));
- float heave=sin(uv.x*11.-tm*1.05+uv.y*6.)*.0025*d*Wv;
- off+=m*(o*k*vec2(1.6/A,1.)+vec2(0.,heave));
- float rockTop=.33-(uv.x-.87)*1.2;
- float rock=smoothstep(.83,.865,uv.x)*smoothstep(rockTop-.03,rockTop+.01,uv.y);
- float sky=smoothstep(.43,.385,uv.y)*smoothstep(.13,.21,uv.x)*(1.-rock)*(1.-jb);
- sky*=1.-smoothstep(.62,.70,uv.x)*smoothstep(.37,.41,uv.y);
+ float heave=sin(uv.x*11.-tm*1.05+uv.y*6.)*.003*d*Wv;
+ off+=m*(o*(.0007+.0055*d)*Wv*vec2(1.6/A,1.)+vec2(0.,heave));
+ /* céu: nuvens a deformar-se (o raio pintado fica quieto) */
+ float raioZ=caixa(uv,vec4(.66,.79,.15,.48),.01);
+ float sky=ss(.505,.48,uv.y)*ss(.19,.24,uv.x)*(1.-ss(.78,.82,uv.x)*ss(.25,.35,uv.y))*(1.-ss(.86,.9,uv.x))*(1.-jb)*(1.-cordas)*(1.-raioZ);
  vec2 cw=vec2(fbm(uv*vec2(2.6,5.)+vec2(tm*.022,tm*.004))-.5, fbm(uv*vec2(3.2,6.)+vec2(5.,tm*.017))-.5);
- off+=sky*cw*vec2(.0055,.010);
- float vela=smoothstep(.155,.105,uv.x)*smoothstep(.47,.40,uv.y);
- off+=vela*vec2(sin(uv.y*34.-tm*2.6)*.0016+sin(uv.y*13.-tm*1.3)*.0012*G, sin(uv.x*60.-tm*2.1)*.0016)*(.6+.6*G)*Wv;
+ off+=sky*cw*vec2(.006,.010);
+ /* a nossa vela: incha e bate, presa ao mastro e às vergas */
+ float vela=caixa(uv,vec4(.055,.195,0.,.40),.01),solta=clamp((uv.x-.055)/.14,0.,1.);
+ off+=vela*solta*vec2(sin(uv.y*30.-tm*2.6)*.002+sin(tm*1.3)*.0015*G,sin(uv.x*50.-tm*2.1)*.002)*(.6+.6*G)*Wv;
+ /* bandeira do junco grande */
+ float band=caixa(uv,vec4(.598,.675,.21,.262),.004),bs=clamp((uv.x-.598)/.077,0.,1.);
+ off+=band*bs*vec2(sin(tm*4.-uv.x*80.)*.0012,sin(tm*4.6-uv.x*110.)*.005+sin(tm*2.1-uv.x*50.)*.0025);
  vec2 su=clamp(uv+off,vec2(.001),vec2(.999));
  vec3 col=texture2D(T,su).rgb;
  float lum=dot(col,vec3(.299,.587,.114));
- float sw=fbm(uv*vec2(4.5,8.)+vec2(tm*.03,tm*.006));
- col*=1.+sky*(sw-.5)*.32;
- col+=m*smoothstep(.62,.92,lum)*.07*(.5+.5*sin(tm*2.6+uv.x*90.+uv.y*55.));
- float rm=smoothstep(.70,.84,uv.x)*smoothstep(.24,.40,uv.y)*smoothstep(.60,.47,uv.y);
- float fm=fbm(uv*vec2(7.,13.)+vec2(-tm*.045,tm*.012));
- float fm2=fbm(uv*vec2(13.,22.)+vec2(-tm*.09,-tm*.03)+3.);
- float mist=rm*smoothstep(.38,.78,fm*.7+fm2*.4)*(.35+.65*RS);
- col=mix(col,vec3(.70,.76,.82)+F*.25,clamp(mist*.62,0.,.75));
- vec2 dl=(uv-vec2(.63,.35))*vec2(A,1.);
- float g=exp(-dot(dl,dl)*2.6);
- col+=F*(g*vec3(.72,.80,1.)*1.1+lum*vec3(.55,.6,.72)*.55);
- vec2 ld=(uv-vec2(.345,.835))*vec2(A,1.);
- float lg=exp(-dot(ld,ld)*26.);
- col+=lg*L*vec3(1.,.6,.24)*.30;
- col*=1.+lg*(L-1.)*.9;
+ col*=1.+sky*(fbm(uv*vec2(4.5,8.)+vec2(tm*.03,tm*.006))-.5)*.3;
+ col+=m*ss(.62,.92,lum)*.07*(.5+.5*sin(tm*2.6+uv.x*90.+uv.y*55.));
+ /* o raio pintado só se vê no clarão */
+ vec2 e=vec2(.007,0.);
+ vec3 fundo=(texture2D(T,su+e).rgb+texture2D(T,su-e).rgb+texture2D(T,su+e.yx*2.4).rgb+texture2D(T,su-e.yx*2.4).rgb)*.25;
+ float traco=raioZ*ss(.80,.93,lum);
+ col=mix(col,min(col,fundo),traco*(1.-clamp(F*1.5,0.,1.)));
+ /* névoa nas rochas da direita, empurrada pela rebentação */
+ float rm=ss(.78,.88,uv.x)*ss(.40,.55,uv.y)*ss(.85,.70,uv.y);
+ float fm=fbm(uv*vec2(7.,13.)+vec2(-tm*.045,tm*.012)),fm2=fbm(uv*vec2(13.,22.)+vec2(-tm*.09,-tm*.03)+3.);
+ col=mix(col,vec3(.72,.78,.84)+F*.2,clamp(rm*ss(.38,.78,fm*.7+fm2*.4)*(.3+.6*RS)*.6,0.,.7));
+ /* clarão do relâmpago */
+ vec2 dl=(uv-vec2(.72,.30))*vec2(A,1.);
+ col+=F*(exp(-dot(dl,dl)*2.2)*vec3(.72,.80,1.)*1.0+lum*vec3(.55,.6,.72)*.5);
  gl_FragColor=vec4(acaba(col),1.);
 }`;
 /* praia: mar a ondular, rebentação a subir e descer na areia, nuvens, fumo da ilha, areia molhada a brilhar */
@@ -485,9 +493,22 @@ function desenha(dt){
   }
   f.clearRect(0,0,W,H);
   if(P.id==='tempestade'){
-    if(!gl){const [lx,ly]=uv2ecra(.345,.835),Rl=H*.3,g=f.createRadialGradient(lx,ly,0,lx,ly,Rl);
-      g.addColorStop(0,`rgba(255,170,80,${.32*lant})`);g.addColorStop(1,'rgba(255,170,80,0)');
-      f.globalCompositeOperation='lighter';f.fillStyle=g;f.fillRect(lx-Rl,ly-Rl,Rl*2,Rl*2);f.globalCompositeOperation='source-over'}
+    /* luzes a tremeluzir: a nossa lanterna e as janelas dos juncos, com o reflexo na água */
+    f.globalCompositeOperation='lighter';
+    (P.luzes||[]).forEach(([lu,lv,forca],i)=>{const tr=.78+.14*Math.sin(t*(9+i*1.7))*Math.sin(t*(5.3+i)+i)+.08*Math.random()-(F>.3?.1:0);
+      const [lx,ly]=uv2ecra(lu,lv),R=H*.06*forca*(1+.15*tr),g=f.createRadialGradient(lx,ly,0,lx,ly,R);
+      g.addColorStop(0,`rgba(255,175,85,${.45*tr})`);g.addColorStop(.35,`rgba(255,150,60,${.16*tr})`);g.addColorStop(1,'rgba(255,150,60,0)');
+      f.fillStyle=g;f.fillRect(lx-R,ly-R,R*2,R*2);
+      if(i>0){for(let k=1;k<6;k++){const [rx,ry]=uv2ecra(lu+Math.sin(t*3+k*1.9+i)*.003,lv+.012+k*.011),a=.22*tr*(1-k/6);
+        f.fillStyle=`rgba(255,170,80,${a})`;f.fillRect(rx-H*.006*forca,ry,H*.012*forca,Math.max(1,H*.0025))}}});
+    f.globalCompositeOperation='source-over';
+    /* raio desenhado: aparece com o clarão, cada vez num sítio diferente */
+    if(raioAtual&&t<raioAtual.fim+.25){const a=Math.min(1,F*1.2)*(t<raioAtual.fim?1:Math.max(0,1-(t-raioAtual.fim)/.25));
+      if(a>.02){f.save();f.lineJoin='round';f.lineCap='round';
+        const linha=(pts,w,cor)=>{f.beginPath();pts.forEach((q,i)=>{const [x,y]=uv2ecra(q[0],q[1]);i?f.lineTo(x,y):f.moveTo(x,y)});f.lineWidth=w;f.strokeStyle=cor;f.stroke()};
+        f.shadowColor='rgba(170,195,255,.9)';f.shadowBlur=22;
+        linha(raioAtual.pts,5*H/900,`rgba(170,195,255,${a*.35})`);linha(raioAtual.pts,1.8*H/900,`rgba(240,245,255,${a})`);
+        raioAtual.ramos.forEach(rb=>linha(rb,1*H/900,`rgba(220,230,255,${a*.7})`));f.restore()}}
     /* chuva */
     f.lineCap='round';const vento=-.28*storm;
     for(const d of gotas){d.y+=d.z*1100*dt*(.8+storm*.25);d.x+=d.z*1100*dt*vento;
@@ -495,13 +516,9 @@ function desenha(dt){
       f.strokeStyle=`rgba(${200+55*Math.min(1,F)|0},215,232,${(.10+.28*d.z)*(1+Math.min(1,F))})`;f.lineWidth=d.z*1.3;
       f.beginPath();f.moveTo(d.x,d.y);f.lineTo(d.x-d.l*vento*.9,d.y-d.l);f.stroke()}
     if(!gl&&F>0){f.fillStyle=`rgba(200,215,245,${Math.min(.55,F*.4)})`;f.fillRect(0,0,W,H)}
+    salpicosPasso(dt);
   } else {
-    /* salpicos nas rochas, de vez em quando */
-    for(const r of ESPUMA){if(t>r.prox){r.prox=t+3+Math.random()*4;
-      for(let i=0;i<26;i++)salpicos.push({u:r.u+(Math.random()-.5)*.02,v:r.v,vu:(Math.random()-.5)*.02,vv:-(.02+Math.random()*.05),vida:1})}}
-    for(const p_ of salpicos){p_.vida-=dt*.9;p_.vv+=dt*.09;p_.u+=p_.vu*dt;p_.v+=p_.vv*dt;
-      if(p_.vida<=0)continue;const [x,y]=uv2ecra(p_.u,p_.v);f.fillStyle=`rgba(255,250,240,${p_.vida*.7})`;f.beginPath();f.arc(x,y,Math.max(1,H/450)*(1.4-p_.vida*.5),0,6.283);f.fill()}
-    salpicos=salpicos.filter(p_=>p_.vida>0);
+    salpicosPasso(dt);
     /* modo simples: brilhos do sol na água */
     if(!gl){f.globalCompositeOperation='lighter';
       for(let i=0;i<70;i++){const k=(i*0.6180339+t*.05)%1,v=.34+k*.30,lg=.025+(v-.32)*.32,u=.628+(Math.sin(i*12.9898)*.5)*2*lg,
@@ -523,8 +540,8 @@ function desenha(dt){
 
 /* modo simples: o mar ondula redesenhando a imagem em tiras finas deslocadas, só dentro da zona de mar */
 const MAR={
- tempestade:{poly:null,topo:.48,fundo:x=>.60+(x-.17)*.34,x0:.17,x1:.80,amp:2.2,
-   buracos:[[.20,.295,.30,.505],[.322,.395,.368,.48],[.432,.33,.498,.495]]},
+ tempestade:{poly:[[0,.505],[.80,.505],[.80,1],[.70,1],[.06,.655],[0,.62]],topo:.505,y1:1,amp:2.2,
+   buracos:[[.235,.37,.295,.525],[.405,.385,.465,.53],[.525,.21,.675,.585],[.30,.575,.38,.635],[.715,.37,.785,.56],[.03,.55,.21,.92]]},
  praia:{poly:[[.29,.325],[.875,.325],[.875,1],[.62,1],[.56,.93],[.53,.86],[.555,.78],[.50,.70],[.41,.62],[.36,.55],[.32,.45],[.28,.38]],topo:.325,y1:1,amp:.9,
    buracos:[[.34,.33,.50,.405],[.51,.325,.565,.40],[.75,.325,.89,.45],[.42,.585,.555,.72],[.60,.53,.76,.69],[.60,.80,.71,.94],[.865,.38,1,.76],[.66,.68,.87,.85]]}
 };
@@ -604,6 +621,15 @@ function camadas(){
     LC.restore();
   }
 }
+function salpicosPasso(dt){
+  const fontes=P.espuma?P.espuma:ESPUMA.map(r=>[r.u,r.v]);if(!salpicosPasso.prox)salpicosPasso.prox={};
+  fontes.forEach(([u,v],i)=>{const key=P.id+i;if(!(t<(salpicosPasso.prox[key]||0))){salpicosPasso.prox[key]=t+(P.id==='tempestade'?1.5:3)+Math.random()*4;
+    const n=P.id==='tempestade'?40:26,f_=P.id==='tempestade'?1.6:1;
+    for(let k=0;k<n;k++)salpicos.push({u:u+(Math.random()-.5)*.02,v,vu:(Math.random()-.5)*.02*f_,vv:-(.02+Math.random()*.05)*f_,vida:1})}});
+  for(const p_ of salpicos){p_.vida-=dt*.9;p_.vv+=dt*.09;p_.u+=p_.vu*dt;p_.v+=p_.vv*dt;
+    if(p_.vida<=0)continue;const [x,y]=uv2ecra(p_.u,p_.v);f.fillStyle=`rgba(240,245,250,${p_.vida*.7})`;f.beginPath();f.arc(x,y,Math.max(1,H/450)*(1.4-p_.vida*.5),0,6.283);f.fill()}
+  salpicos=salpicos.filter(p_=>p_.vida>0);
+}
 /* olhos a abrir: fecha, entreabre, pisca, abre; desfocado no início */
 const PK=[[0,0],[1.3,0],[2.1,.32],[2.6,.06],[3.4,.55],[3.8,.38],[5,1]];
 const palpT=$('#palp .pt'),palpB=$('#palp .pb');
@@ -616,7 +642,18 @@ function palpebras(){
   const fl=bl>.2?`blur(${bl.toFixed(1)}px)`:'';if(cv.style.filter!==fl){cv.style.filter=fl;lay.style.filter=fl}
 }
 /* ---------- relâmpagos ---------- */
+let raioAtual=null;
+function geraRaio(){
+  const x0=.24+Math.random()*.38,y0=.04+Math.random()*.08,x1=x0+(Math.random()-.5)*.1,y1=.40+Math.random()*.08;
+  let pts=[[x0,y0],[x1,y1]];
+  for(let it=0,amp=.03;it<6;it++,amp*=.55){const np=[pts[0]];
+    for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];np.push([(a[0]+b[0])/2+(Math.random()-.5)*amp/A*2.2,(a[1]+b[1])/2+(Math.random()-.5)*amp*.35]);np.push(b)}pts=np}
+  const ramos=[];for(let k=0;k<2;k++){const i=8+Math.floor(Math.random()*(pts.length-20));let [x,y]=pts[i];const rb=[[x,y]],dir=Math.random()<.5?-1:1;
+    for(let j=0;j<14;j++){x+=dir*(.002+Math.random()*.004);y+=.002+Math.random()*.004;rb.push([x,y])}ramos.push(rb)}
+  return {pts,ramos};
+}
 function raio(forca=1){let s=t;const n=2+(Math.random()*3|0);
+  if(P.id==='tempestade'&&Math.random()<.7){raioAtual=geraRaio();raioAtual.fim=t+.5}
   for(let i=0;i<n;i++){flashes.push({s,a:(i?.5+Math.random()*.6:.9)*forca});s+=.06+Math.random()*.18}trovao(forca)}
 function calcF(){flashes=flashes.filter(x=>t-x.s<1.2);let v=0;for(const x of flashes)if(t>=x.s)v+=x.a*Math.exp(-(t-x.s)*9);return Math.min(1.6,v)}
 
