@@ -31,6 +31,9 @@ body.cinema .barra{height:11vh}
 #leg.fala p{font-style:normal}
 #leg.centro{bottom:auto;top:50%;transform:translate(-50%,-40%)}#leg.centro.on{transform:translate(-50%,-50%)}
 #leg.centro p{font-style:normal;font-family:var(--serif);font-weight:300}
+#leg.grande.on p{animation:bate .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes bate{0%{transform:scale(1.25);filter:blur(6px);opacity:0}100%{transform:scale(1);filter:none;opacity:1}}
+#cartao p.forte.on,#cartao p.nome.on{animation:bate .6s cubic-bezier(.2,.8,.2,1)}
 #leg.grande p{font-family:var(--caps);font-style:normal;font-weight:700;letter-spacing:.06em;font-size:calc(clamp(1.8rem,5vw,3.6rem)*var(--esc))}
 /* cartão negro */
 #cartao{position:fixed;inset:0;background:#000;z-index:6;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .8s}
@@ -125,7 +128,7 @@ body.cinema .barra{height:11vh}
     <button class="item" id="bPlanos" type="button">Escolher plano</button>
   </div>
   <div class="planos" id="listaPlanos" hidden></div>
-  <div class="nota">Melhor com auscultadores · esboços provisórios nos planos 4 a 12</div>
+  <div class="nota">Melhor com auscultadores · ecrã deitado · desenhos provisórios</div>
 </section>
 <script>
 'use strict';
@@ -242,6 +245,8 @@ async function diz(txt,o={}){const meu=tok;
   legP.textContent=txt;legQ.textContent=o.quem||'';legQ.hidden=!o.quem;
   leg.className=(o.fala||txt.startsWith('—')?'fala ':'')+(o.grande?'grande ':'')+(o.centro?'centro ':'');
   void leg.offsetWidth;leg.classList.add('on');musicaDuck(true);
+  if(o.bum){taiko(o.bum===true?1:o.bum,mestre);tremor=Math.max(tremor,.7)}
+  if(o.empurra&&!vinhetas)anima(alvo,{z:alvo.z*(1+o.empurra)},o.dur||3,t=>t);
   const d=o.dur||Math.max(1.9,1.2+txt.length*.05);
   await esperaToque(d,.5);vivo(meu);
   leg.classList.remove('on');musicaDuck(false);await espera(o.pausa??.45);vivo(meu);
@@ -664,8 +669,13 @@ function musica(qual,tc=1.2){if(!AC)return;if(qual===musAtual)return;const n=AC.
   if(qual==='batalha'){bordao(55,'sawtooth',.06,300);let k=0;musTimer=setInterval(()=>{if(pausado)return;k++;const ac=k%4===0?1:k%2===0?.6:Math.random()<.4?.35:0;if(ac)taiko(ac,g);if(k%16===0)sino(.4)},230)}
 }
 
+/* subida antes de um corte (prato ao contrário) */
+function sobe(dur=1.6,f=1){if(!AC)return;const n=AC.currentTime,s=AC.createBufferSource();s.buffer=BW;const hp=filt('highpass',2500),g=AC.createGain();
+  s.connect(hp);hp.connect(g);g.connect(mestre);g.connect(rev);g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(.5*f,n+dur);g.gain.setValueAtTime(0,n+dur+.01);
+  hp.frequency.setValueAtTime(5000,n);hp.frequency.exponentialRampToValueAtTime(900,n+dur);s.start(n);s.stop(n+dur+.05)}
+
 function pintaT(Wm,Hm,fn,esc=.5){return pinta(Wm,Hm,g=>{fn(g);acabamento(g,Wm,Hm,Wm+Hm)},esc)}
-const V={fariaK:0,agua:0,comerK:0,caiK:0,peixeK:0,choroK:0,procK:0,tigreK:0,gritoK:0,fogeK:0,olhosK:0,ajoelhaK:0,pescK:0,olhaK:0,fumoA:0,golpeK:0,escuroRio:0,peixeMex:0,cojaK:0};
+const V={cojaCai:0,fariaK:0,agua:0,comerK:0,caiK:0,peixeK:0,choroK:0,procK:0,tigreK:0,gritoK:0,fogeK:0,olhosK:0,ajoelhaK:0,pescK:0,olhaK:0,fumoA:0,golpeK:0,escuroRio:0,peixeMex:0,cojaK:0};
 let martelo=0;
 /* =========================================================
    CENAS · piloto «O Milhano»
@@ -1096,8 +1106,9 @@ const M_BAT={W:WM,H:HM,base:'#6d6862',fundo:pintaT(WM,HM,g=>{
     if(V.fumoA>0){g.fillStyle=`rgba(190,186,178,${V.fumoA*.28})`;g.fillRect(0,0,WM,HM)}
   }};
 const M_COJA={W:1000,H:1200,base:'#3a3430',fundo:pintaT(1000,1200,g=>{grad(g,0,1200,[[0,'#6e6a66'],[1,'#2e2a26']])}),
-  anima(g,t){fumo(g,fumoB.slice(0,8),t*.5,'rgba(210,205,198,A)',.3);figura(g,500,1180,1000,'bracosAr',{cor:'#1a1210',manto:'#a01e1e'});
-    g.strokeStyle='#d6b04a';g.lineWidth=10;g.beginPath();g.moveTo(420,600);g.lineTo(580,600);g.stroke();g.beginPath();g.moveTo(410,760);g.lineTo(590,760);g.stroke()}};
+  anima(g,t){fumo(g,fumoB.slice(0,8),t*.5,'rgba(210,205,198,A)',.3);const k=V.cojaCai||0;g.save();g.translate(500,1180);g.rotate(k*1.2);g.translate(k*120,k*200);g.translate(-500,-1180);
+    figura(g,500,1180,1000,misturaPose(POSES.bracosAr,POSES.cair,k),{cor:'#1a1210',manto:'#a01e1e'});
+    if(k<.3){g.strokeStyle='#d6b04a';g.lineWidth=10;g.beginPath();g.moveTo(420,600);g.lineTo(580,600);g.stroke();g.beginPath();g.moveTo(410,760);g.lineTo(590,760);g.stroke()}g.restore()}};
 const M_FARIA2={W:1000,H:1200,base:'#3a3430',fundo:pintaT(1000,1200,g=>{grad(g,0,1200,[[0,'#7a7470'],[1,'#33302c']])}),
   anima(g,t){fumo(g,fumoB.slice(8,16),t*.5,'rgba(210,205,198,A)',.3);figura(g,520,1190,980,misturaPose(POSES.espada,POSES.golpe,V.golpeK),{cor:'#140f0b',manto:'#5a1a14',espada:'#e2ded6',luz:'rgba(255,210,150,.6)',luzLado:1})}};
 let santiago=0;
@@ -1182,46 +1193,59 @@ const C0={nome:'Quem és',mundo:M_TEMP,cam:{x:.62,y:.42,z:1.25},
 CENAS=[C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12];
 
 /* =========================================================
-   GUIÃO v2 · texto de filme, só escolhas como interação
+   GUIÃO v3 · piloto fechado, linguagem de série
+   Regra: só se fala do que o espectador já viu.
    ========================================================= */
 const centro=(o={})=>Object.assign({centro:true},o);
+const forte=(o={})=>Object.assign({grande:true,bum:.9},o);
 
-/* ---------- abertura: flash-forward ---------- */
+/* ---------- abertura: flash-forward (sem nomes) ---------- */
 const CA={nome:'Abertura',mundo:M_BAT,cam:{x:.55,y:.55,z:1.3},
-  prepara(){V.fumoA=.75;V.golpeK=0;V.cojaK=1},
+  prepara(){V.fumoA=.75;V.golpeK=0;V.cojaCai=0},
   async guiao(m){
     setCinema(true);musica('batalha',.2);sinoAflito=true;ambiente({multidao:.35,fumo:.3,rio:.1},.2);balanco=.5;
-    negro(false,.25);canhao();flash(.6);tremor=1.8;anima(alvo,{x:.62,z:1.5},4);
-    await diz('Rio de Tinlau.',centro({dur:1.6}));vivo(m);
-    canhao();flash(.5);tremor=1.6;
+    negro(false,.2);canhao();flash(.6);tremor=1.8;anima(alvo,{x:.62,z:1.5},4);
+    await espera(1.2);vivo(m);canhao();flash(.5);tremor=1.6;
     montaVinhetas([{r:[0,0,.5,1],mundo:M_COJA,cam0:{x:.5,y:.38,z:1.2},cam1:{z:1.45},dur:6,ent:'esq'}]);
-    await diz('— Galinhas brancas! Mulheres de barba!',{quem:'Coja Acém',dur:2.2});vivo(m);
+    await diz('— Galinhas brancas! Mulheres de barba!',{dur:2.2});vivo(m);
     vinhetas.paineis.push({r:[.5,0,.5,1],mundo:M_FARIA2,cam0:{x:.5,y:.4,z:1.15},cam1:{z:1.35},dur:6,ent:'dir',atraso:T-vinhetas.t0});
-    await espera(1.1);vivo(m);await anima(V,{golpeK:1},.3,t=>t*t);vivo(m);
+    sobe(1.2);await espera(1.2);vivo(m);await anima(V,{golpeK:1},.3,t=>t*t);vivo(m);
     fx.congela=true;silencio(.02);sinoAflito=false;flash(1);musica(null,.02);
-    await espera(1.1);vivo(m);negro(true,.05);await espera(1);vivo(m);
+    await espera(1);vivo(m);negro(true,.05);await espera(1.2);vivo(m);
     fx.congela=false;vinhetas=null;cortaTudo();volta(.01);setCinema(false);
-    await cartaz('Algumas semanas antes.',{jaNegro:true,fica:true,dur:2.4});vivo(m);
+    await cartaz('Semanas antes.',{jaNegro:true,fica:true,dur:2.2});vivo(m);
   }};
 
-/* ---------- intro (mantém-se) ---------- */
+/* ---------- intro ---------- */
+C0.guiao=async function(m){
+  musica('tensao',2);ambiente({vento:.25,chuva:.06,mar:.2},1.5);fx.escuro=.55;fx.desfoque=4;balanco=.4;
+  anima(alvo,{x:.45,z:1.05},24,t=>t);
+  await espera(1);vivo(m);negro(false,3);await espera(2.2);vivo(m);
+  await diz('1540.',centro({dur:1.6}));vivo(m);
+  await diz('Mar da China.',centro({dur:2}));vivo(m);
+  await diz('Tu és Fernão Mendes Pinto.',centro(forte({dur:2.8})));vivo(m);
+  await diz('Português. Longe de casa. Sem nada.',centro());vivo(m);
+  await diz('Não és herói. Não és soldado.',centro());vivo(m);
+  await diz('És testemunha.',centro(forte({dur:2.6})));vivo(m);
+  await diz('Tudo o que vais ver, ele viu.',centro({dur:3}));vivo(m);
+  sobe(1.4);negro(true,1.2);await espera(1.3);vivo(m);musica(null,.3);
+  await cartaz('O Milhano',{classe:'forte',jaNegro:true,fica:true,dur:2.4});vivo(m);
+};
 
 /* ---------- 1 · tempestade ---------- */
 C1.guiao=async function(m){
   musica('tempestade',2);ambiente({vento:.55,chuva:.14,mar:.4},1);balanco=1.3;respira=.7;
-  await espera(1.6);vivo(m);negro(false,2.4);await espera(2.2);vivo(m);
+  await espera(1.4);vivo(m);negro(false,2.2);await espera(2);vivo(m);
   tremor=.8;madeira(1);alvo.x=.78;alvo.y=.5;
-  await diz('— Fernão! O machado!',{quem:'Um marinheiro',dur:2.2});vivo(m);
+  await diz('— Fernão! O machado!',{quem:'Um marinheiro',dur:2});vivo(m);
   alvo.x=.5;alvo.y=.45;
-  await diz('Sete meses atrás de um pirata.');vivo(m);
-  await diz('Coja Acém. Roubou tudo a Faria.');vivo(m);
+  await diz('Há sete meses que caçamos um pirata.',{empurra:.08});vivo(m);
+  await diz('Roubou tudo ao nosso capitão.');vivo(m);
   alvo.x=.6;alvo.y=.42;
-  await diz('E desapareceu.');vivo(m);
-  await diz('Os homens estão fartos. Querem o ouro. Querem ir para casa.');vivo(m);
-  await diz('Paramos numa ilha. Chamam-lhe a ilha dos Ladrões.');vivo(m);
-  await diz('Doze dias à espera do vento certo.');vivo(m);
-  raio(1.3);tremor=1.2;
-  await diz('Veio o errado.',{grande:true,dur:1.8});vivo(m);
+  await diz('Ninguém sabe onde está.');vivo(m);
+  await diz('Os homens estão fartos.');vivo(m);
+  raio(1.4);tremor=1.2;
+  await diz('Esta noite, isso deixa de importar.',forte({dur:2.4,bum:.7}));vivo(m);
   const e=await escolha('Segurar a corda','Ajudar o homem na água');vivo(m);
   if(e===1){anima(alvo,{x:.34,y:.6,z:1.6},1.4);this.maosDy=H*.12;await diz('Estendo a mão.',{dur:1.6});vivo(m);raio(1.3);tremor=1.4;
     await diz('O mar leva-o.',{dur:1.8});vivo(m);anima(this,{maosDy:0},1);anima(alvo,{x:.6,y:.42,z:1.05},1.5)}
@@ -1231,59 +1255,62 @@ C1.guiao=async function(m){
 /* ---------- 2 · naufrágio ---------- */
 C2.guiao=async function(m){
   negro(false,.01);balanco=1.6;respira=.8;setCinema(true);ambiente({vento:.8,chuva:.2,mar:.5},.5);
-  await espera(.6);vivo(m);raio(1.5);tremor=1.2;
-  await diz('Duas da manhã.',{dur:1.8});vivo(m);
+  await espera(.5);vivo(m);raio(1.5);tremor=1.2;
+  await diz('Duas da manhã.',{dur:1.6});vivo(m);
   raio(1.8);
-  await diz('Quatro barcos. Contra as rochas.',{dur:2});vivo(m);
-  await diz('Ao mesmo tempo.',{dur:1.4,pausa:.1});vivo(m);
+  await diz('Quatro barcos.',{dur:1.4,pausa:.15});vivo(m);
+  sobe(1.5);
+  await diz('Contra as rochas.',{dur:1.5,pausa:.05});vivo(m);
   estrondo();tremor=2.5;this.maosTremor=2;flash(.8);
   anima(alvo,{r:.32,z:1.5,y:.62},1.6);anima(this,{maosDy:H*.25},1.2);
   await diz('Pedaços.',{dur:1.2,pausa:.1,grande:true});vivo(m);
   abafar(true);anima(fx,{desfoque:6},.9);await anima(V,{agua:1},1.3);vivo(m);
-  silencio(.3);negro(true,.5);await espera(1.4);vivo(m);
+  silencio(.3);negro(true,.5);await espera(1.6);vivo(m);
   setCinema(false);cortaTudo();volta(.01);abafar(false,.01);
   await cartaz('586 mortos.',{classe:'forte',jaNegro:true,fica:true,dur:3});vivo(m);
   await cartaz('53 vivos.',{classe:'forte',jaNegro:true,fica:true,dur:2.4});vivo(m);
-  await cartaz('Eu sou um deles.',{jaNegro:true,fica:true,dur:2.4});vivo(m);
+  await cartaz('Tu és um deles.',{jaNegro:true,fica:true,dur:2.4});vivo(m);
 };
 
 /* ---------- 3 · a praia ---------- */
 C3.guiao=async function(m){
   ambiente({ondas:.35,vento:.06,respira:.14},1);respira=1;fx.desfoque=12;fx.escuro=.7;
   negro(false,2.5);anima(fx,{escuro:0},5);anima(fx,{desfoque:0},6,easeOut);
-  await espera(2.5);vivo(m);
-  await diz('Acordo. Ainda estou vivo.');vivo(m);
-  await diz('Não sei porquê.');vivo(m);
+  await espera(2.4);vivo(m);
+  await diz('Acordo.',{dur:1.6});vivo(m);
+  await diz('Estou vivo. Não sei porquê.');vivo(m);
   musica('praia',2);alvo.x=.5;
-  await diz('A praia está cheia de mortos.');vivo(m);
-  await diz('Ninguém se mexe. Ninguém fala.');vivo(m);
-  alvo.x=.45;await espera(.8);vivo(m);
+  await diz('À minha volta, só mortos.',{empurra:.06});vivo(m);
+  await diz('Ninguém se mexe.');vivo(m);
+  alvo.x=.45;sobe(1.6);await espera(1);vivo(m);
   await diz('Até que ele aparece.');vivo(m);
-  await anima(V,{fariaK:1},2.2);vivo(m);
-  await diz('Faria. Com a roupa de um morto.');vivo(m);
+  await anima(V,{fariaK:1},2);vivo(m);
+  await diz('O capitão. António de Faria.',{bum:.6});vivo(m);
   anima(alvo,{z:1.5,x:.47,y:.62},4);
-  await diz('— Perdemos quinhentos mil. Vamos ganhar seiscentos mil.',{quem:'António de Faria'});vivo(m);
-  await diz('É louco.',{dur:1.6});vivo(m);
+  await diz('Veste a roupa de um morto.');vivo(m);
+  await diz('— Perdemos tudo.',{quem:'António de Faria',dur:1.8});vivo(m);
+  await diz('— Vamos ganhar o dobro.',{quem:'António de Faria',dur:2});vivo(m);
+  await diz('Está louco.',{dur:1.5});vivo(m);
   await diz('Mas levantamo-nos.');vivo(m);
   negro(true,1.2);await espera(1.3);vivo(m);
 };
 
-/* ---------- 4 · fome (só vinhetas, sem gestos) ---------- */
+/* ---------- 4 · fome ---------- */
 C4.guiao=async function(m){
   this.comer=false;ambiente({ondas:.18,vento:.1},1);
   montaVinhetas([
     {r:[0,0,.62,.55],mundo:M_PRAIA_V,cam0:{x:.16,y:.56,z:2.4},cam1:{x:.24,z:2.7},dur:12,ent:'esq'},
     {r:[.62,0,.38,.55],mundo:M_PRAIA_V,cam0:{x:.3,y:.5,z:3.4},cam1:{z:3.8},dur:12,ent:'dir',atraso:.6},
     {r:[0,.55,1,.45],mundo:M_PRAIA_V,cam0:{x:.55,y:.35,z:1.5},cam1:{x:.68},dur:14,ent:'baixo',atraso:1.2}]);
-  negro(false,1.2);await espera(1.8);vivo(m);
+  negro(false,1);await espera(1.6);vivo(m);
   await diz('Cinco dias.');vivo(m);
   await diz('A comida apodrece.');vivo(m);
   await diz('Os homens começam a cair.');vivo(m);
   montaVinhetas([{r:[0,0,1,1],mundo:M_PRAIA_V,cam0:{x:.23,y:.62,z:3.4},cam1:{z:4},dur:8,ent:'fade'}]);
-  await espera(1);vivo(m);anima(V,{caiK:1},.8,t=>t*t);await espera(.8);vivo(m);baque();
-  await diz('Este, a meio de uma frase.');vivo(m);
+  await espera(.9);vivo(m);anima(V,{caiK:1},.8,t=>t*t);await espera(.8);vivo(m);baque();
+  await diz('Um deles, a meio de uma frase.');vivo(m);
   musica(null,2);
-  await diz('Vamos morrer nesta praia.',{grande:true,dur:2.4});vivo(m);
+  await diz('Vamos morrer nesta praia.',forte({dur:2.4,bum:.6}));vivo(m);
   negro(true,1.2);await espera(1.3);vivo(m);
 };
 
@@ -1291,91 +1318,75 @@ C4.guiao=async function(m){
 C5.guiao=async function(m){
   ambiente({ondas:.12,vento:.12},1);
   montaVinhetas([{r:[0,0,.42,1],mundo:M_CEU,cam0:{x:.627,y:.27,z:3.2},cam1:{z:4.4,y:.25},dur:16,ent:'esq'}]);
-  negro(false,1);await espera(1.3);vivo(m);
+  negro(false,1);await espera(1.2);vivo(m);
   await diz('E então…',{dur:1.8});vivo(m);asas();piado();
-  await diz('Uma ave. Mesmo por cima de nós.');vivo(m);
+  await diz('Uma ave.');vivo(m);
   vinhetas.paineis.push({r:[.42,0,.2,1],mundo:M_QUEDA,cam0:{x:.385,y:.45,z:1.05},cam1:{z:1.1},dur:10,ent:'cima',atraso:T-vinhetas.t0});
-  await espera(.6);vivo(m);
-  await diz('Larga uma coisa.',{dur:1.6});vivo(m);
+  await espera(.5);vivo(m);
+  await diz('Larga qualquer coisa.',{dur:1.6});vivo(m);
   ambiente({},.6);await anima(V,{peixeK:1},4,t=>t*t);vivo(m);
   vinhetas.paineis.push({r:[.62,0,.38,1],mundo:M_AREIA,cam0:{x:.4,y:.7,z:3.4},cam1:{z:3.8},dur:10,ent:'baixo',atraso:T-vinhetas.t0});
-  baque();ambiente({ondas:.12,vento:.08},1);await espera(1.2);vivo(m);
-  await diz('Um peixe. Vivo.');vivo(m);
+  baque();ambiente({ondas:.12,vento:.08},1);await espera(1.1);vivo(m);
+  await diz('Um peixe.',{dur:1.6});vivo(m);
+  await diz('Vivo.',{dur:1.6});vivo(m);
   musica('viola',3);
   vinhetas=null;this.mundo=M_FARIA;Object.assign(cam,novaCam({x:.47,y:.6,z:1.6}));alvo=novaCam({x:.47,y:.6,z:1.6});
   anima(alvo,{z:2.3,y:.6},10);await anima(V,{choroK:1},2.5);vivo(m);
-  await diz('Faria cai de joelhos.');vivo(m);
-  await diz('E chora.',{grande:true,dur:2.2});vivo(m);
+  await diz('O capitão cai de joelhos.');vivo(m);
+  await diz('E chora.',forte({dur:2.2,bum:false}));vivo(m);
   negro(true,1.4);await espera(1.5);vivo(m);
 };
 
-/* ---------- 6 · a ribeira (sem jogo: as aves largam o peixe sozinhas) ---------- */
+/* ---------- 6 · o vale (revelação, sem tigre nem aves) ---------- */
 C6.guiao=async function(m){
-  ambiente({folhas:.08,rio:.06,vento:.08,multidao:.05},1);musica('praia',2);
-  negro(false,1.6);anima(V,{procK:1.6},22,t=>t);anima(alvo,{x:.5,y:.6},14);
+  ambiente({folhas:.08,rio:.06,vento:.08,multidao:.04},1);musica('praia',2);
+  V.procK=0;Object.assign(cam,novaCam({x:.25,y:.7,z:1.6}));alvo=novaCam({x:.25,y:.7,z:1.6});
+  negro(false,1.6);anima(V,{procK:1.6},20,t=>t);
   await espera(1.4);vivo(m);
   await diz('De onde veio aquela ave?');vivo(m);
-  await diz('Subimos o morro.');vivo(m);
-  await diz('Do outro lado…');vivo(m);
-  await diz('Água doce. Fruta.');vivo(m);
-  musica(null,.4);ambiente({folhas:.06},.3);
-  montaVinhetas([{r:[0,0,.6,1],mundo:M_TIGRE,cam0:{x:.5,y:.75,z:1.15},cam1:{z:1.35},dur:10,ent:'fade'}]);rugido();
-  await diz('E um tigre.',{grande:true,dur:1.8});vivo(m);
-  vinhetas.paineis.push({r:[.6,0,.4,1],mundo:M_HOMENS,cam0:{x:.5,y:.7,z:1.1},cam1:{z:1.2},dur:8,ent:'dir',atraso:T-vinhetas.t0});
-  await espera(.4);vivo(m);anima(V,{gritoK:1},.6);grito(1.3,1.6);tremor=.8;
-  await diz('— Gritem! Todos!',{quem:'António de Faria',dur:1.6});vivo(m);
-  await anima(V,{tigreK:1},1.2,t=>t*t);vivo(m);
-  await diz('Fugiu. Deixou-nos o jantar.');vivo(m);
-  vinhetas=null;musica('praia',2);anima(alvo,{x:.5,y:.4,z:1.05},2);ambiente({rio:.08,folhas:.06,vento:.08},1);
-  /* aves sobre o rio: os homens gritam, elas largam o peixe */
-  const meu=tok;let fim=T+11,prox=T;
-  const ciclo=async()=>{while(T<fim){if(meu!==tok)return;if(T>=prox){largaAve(true);prox=T+2.4;
-      setTimeout(()=>{if(meu!==tok)return;const a=aves.find(a=>a.peixe&&!a.largou&&a.xAtual>500&&a.xAtual<1900);if(a){a.largou=1;a.tl=TD;a.xl=a.xAtual;a.yl=a.y;grito(.8,.9)}},1300/VEL)}
-      await espera(.2).catch(()=>{})}};
-  ciclo();
-  await diz('Os milhanos pescam no rio.');vivo(m);
-  await diz('Gritamos. Largam o peixe.');vivo(m);
-  await diz('Uma semana assim.');vivo(m);
-  await diz('Estamos vivos.',{grande:true,dur:2});vivo(m);
-  await espera(1);vivo(m);
+  await diz('Seguimos-lhe o rasto.');vivo(m);
+  anima(alvo,{x:.38,y:.62,z:1.35},5);
+  await diz('Morro acima.');vivo(m);
+  sobe(2.2);await diz('E do outro lado…',{dur:2.2});vivo(m);
+  anima(alvo,{x:.5,y:.6,z:1.05},4.5,easeOut);flash(.25);
+  await espera(1.6);vivo(m);
+  await diz('Água.',{dur:1.4});vivo(m);
+  await diz('Fruta.',{dur:1.4});vivo(m);
+  await diz('Estamos vivos.',forte({dur:2.4,bum:false}));vivo(m);
+  await espera(.8);vivo(m);
   negro(true,1.2);await espera(1.3);vivo(m);musica(null,1.5);
   await cartaz('Semanas depois.',{jaNegro:true,fica:true});vivo(m);
 };
 
-/* ---------- 7 · a lanteia ---------- */
+/* ---------- 7 · a lanteia (só ação) ---------- */
 C7.guiao=async function(m){
   ambiente({ondas:.18,vento:.05,folhas:.06,respira:.06},1);fogoV=.2;respira=.4;
-  negro(false,1.5);await espera(1.5);vivo(m);
+  negro(false,1.4);await espera(1.4);vivo(m);
   await diz('Um barco chinês.');vivo(m);
-  await diz('Trinta homens. Nenhum sabe que estamos aqui.');vivo(m);
+  await diz('Trinta homens.');vivo(m);
   anima(alvo,{x:.62,y:.66},4);
-  await diz('Um velho a cozinhar. Arroz. Pato.');vivo(m);
-  await diz('O cheiro está a matar-me.');vivo(m);
-  await diz('— Ao sinal. Armas primeiro.',{quem:'António de Faria',dur:2});vivo(m);
+  await diz('Nenhum sabe que estamos aqui.',{empurra:.06});vivo(m);
+  await diz('— Ao meu sinal.',{quem:'António de Faria',dur:1.8});vivo(m);
+  await diz('— Armas primeiro.',{quem:'António de Faria',dur:1.8});vivo(m);
   coracao(90,.6);
-  await diz('— Jesus, nome de Jesus.',{dur:1.4,pausa:.15});vivo(m);
-  await diz('— Jesus, nome de Jesus.',{dur:1.3,pausa:.15});vivo(m);
-  await diz('— Jesus, nome de Jesus!',{grande:true,dur:1.3,pausa:.1});vivo(m);
-  const e=await escolha('Correr para o barco','Correr para o arroz',{seg:6});vivo(m);this.arroz=e===1;
-  coracao(0);musica('lanteia',.2);grito(1.1,1.2);respira=0;tremor=1.5;
-  anima(alvo,e===1?{x:.62,y:.66,z:2.1}:{x:.28,y:.62,z:1.9},2.6);anima(V,{fogeK:1},2.2);
-  for(let i=0;i<10;i++){madeira(.5);tremor=1.4;await espera(.26);vivo(m)}
+  await diz('— Jesus, nome de Jesus.',{dur:1.3,pausa:.12});vivo(m);
+  await diz('— Jesus, nome de Jesus.',{dur:1.2,pausa:.12});vivo(m);
+  sobe(1.2);
+  await diz('— Jesus, nome de Jesus!',{grande:true,dur:1.2,pausa:.05});vivo(m);
+  coracao(0);musica('lanteia',.1);grito(1.1,1.2);respira=0;tremor=1.5;
+  anima(alvo,{x:.28,y:.62,z:1.9},2.6);anima(V,{fogeK:1},2.2);
+  for(let i=0;i<10;i++){madeira(.5);tremor=1.4;await espera(.24);vivo(m)}
   canhao();flash(.7);tremor=2.2;await espera(1);vivo(m);
   await diz('A praia esvazia-se.');vivo(m);
-  if(this.arroz){await diz('Eu trago o tacho.',{dur:1.6});vivo(m)}
-  musica(null,1.5);negro(true,.6);await espera(.7);vivo(m);
-  arrozOn=true;this.mundo={W:1600,H:900,base:'#2a1d14',fundo:pintaT(1600,900,g=>{grad(g,0,900,[[0,'#3b2a1e'],[1,'#1a120c']]);fogo(g,1300,700,90,0,2)})};
-  Object.assign(cam,novaCam({z:1.1}));alvo=novaCam({z:1.15});fogoV=.4;
-  negro(false,.8);await espera(1);vivo(m);
-  await diz('O melhor jantar da minha vida.');vivo(m);
-  await diz('E agora temos um barco.');vivo(m);
-  fogoV=0;negro(true,1);await espera(1.1);vivo(m);
+  await diz('Agora temos um barco.',forte({dur:2.2,bum:.6}));vivo(m);
+  await diz('E o capitão tem pressa.');vivo(m);
+  musica(null,1.2);negro(true,1);await espera(1.1);vivo(m);
 };
 
-/* ---------- 8 · o junco ---------- */
+/* ---------- 8 · o junco: o nome ---------- */
 C8.guiao=async function(m){
   ambiente({mar:.25,vento:.12},1);balanco=.5;respira=.3;
-  negro(false,1.5);await espera(1.5);vivo(m);
+  negro(false,1.4);await espera(1.4);vivo(m);
   await diz('Noite. Tomamos um junco.');vivo(m);
   await diz('Ninguém resiste.');vivo(m);
   anima(alvo,{y:.82,z:1.7},3);madeira(.8);
@@ -1384,111 +1395,118 @@ C8.guiao=async function(m){
   await diz('Há gente lá em baixo.');vivo(m);
   const e=await escolha('Descer','Chamar Faria');vivo(m);
   if(e===0){anima(alvo,{z:2.4,y:.86},1.6);madeira(.6);await diz('Desço. Cheira a sangue.',{dur:2});vivo(m)}
-  else{await diz('— Faria! Aqui em baixo!',{quem:'Fernão',dur:1.8});vivo(m)}
-  await diz('Oito portugueses. Em sangue.');vivo(m);
-  await diz('— Três juncos. Quinhentos homens.',{quem:'Um dos oito'});vivo(m);
+  else{await diz('— Capitão! Aqui em baixo!',{quem:'Fernão',dur:1.8});vivo(m)}
+  await diz('Oito portugueses.');vivo(m);
+  await diz('Feridos. Quase mortos.');vivo(m);
+  await diz('— Três barcos. Quinhentos homens.',{quem:'Um dos oito'});vivo(m);
   await diz('— Mataram dezoito dos nossos.',{quem:'Um dos oito'});vivo(m);
   await diz('— Quem?',{quem:'António de Faria',dur:1.4});vivo(m);
-  coracao(0);musica(null,.3);
+  coracao(0);musica(null,.3);sobe(1.4);await espera(1.3);vivo(m);
   await cartaz('Coja Acém.',{classe:'nome',dur:2.4});vivo(m);
+  await diz('O pirata.',{dur:1.6});vivo(m);
+  await diz('O mesmo que caçamos há sete meses.');vivo(m);
   anima(alvo,{x:.38,y:.55,z:1.35},3);await anima(V,{ajoelhaK:.5},2);vivo(m);
-  await diz('Faria ajoelha-se.');vivo(m);
+  await diz('O capitão ajoelha-se.');vivo(m);
   musica('tema',2);
-  await diz('— Juro sobre os Evangelhos: o mouro paga tudo.',{quem:'António de Faria'});vivo(m);
+  await diz('— Juro: vai pagar tudo.',{quem:'António de Faria'});vivo(m);
   anima(V,{ajoelhaK:1},1.2);
   await diz('— Por bem ou por mal.',{quem:'António de Faria',dur:2});vivo(m);
-  await diz('— Por bem não vai ser.',{quem:'António de Faria',dur:2.2});vivo(m);
+  await diz('— E por bem não vai ser.',{quem:'António de Faria',dur:2.2});vivo(m);
   grito(1.6,1.8);ambiente({mar:.25,multidao:.25},.2);tremor=.8;
-  await diz('— A eles!',{quem:'Os homens',dur:1.6});vivo(m);
-  await diz('Eu grito. Nem penso. Grito.');vivo(m);
+  await diz('— A eles!',{quem:'Os homens',dur:1.6,bum:.8});vivo(m);
+  await diz('Eu grito. Nem penso.');vivo(m);
   ambiente({mar:.2},1);negro(true,1.2);await espera(1.3);vivo(m);
 };
 
-/* ---------- 9 · o espião (sem gesto: só tensão) ---------- */
+/* ---------- 9 · o espião + a espera ---------- */
 C9.guiao=async function(m){
   ambiente({rio:.1,vento:.06,respira:.06},1);fogoV=.15;balanco=.35;respira=.5;musica('tensao',3);
-  negro(false,1.5);await espera(1.5);vivo(m);
-  await diz('Faria precisa de olhos lá dentro.');vivo(m);
-  await diz('Escolhe o mais pequeno.');vivo(m);
-  await diz('Eu.',{grande:true,dur:1.4});vivo(m);
-  await diz('Disfarce de pescador. Cinza na barba.');vivo(m);
+  negro(false,1.4);await espera(1.4);vivo(m);
+  await diz('Precisamos de saber onde ele está.');vivo(m);
+  await diz('O capitão escolhe o mais pequeno.');vivo(m);
+  await diz('Eu.',forte({dur:1.4,bum:.6}));vivo(m);
+  await diz('Disfarçado de pescador. Rio acima.');vivo(m);
   anima(alvo,{x:.3,y:.56},5);
-  await diz('Ali. O junco dele.');vivo(m);
+  await diz('Ali. O barco dele.',{empurra:.06});vivo(m);
   await diz('Tão perto que ouço os martelos.');vivo(m);
   anima(alvo,{x:.62,y:.6},3);await anima(V,{pescK:1},4);vivo(m);
-  await diz('Um pescador. Olha para mim.');vivo(m);
+  await diz('Alguém olha para mim.');vivo(m);
   anima(V,{olhaK:1},.6);coracao(110,1);maoTreme=1.2;anima(alvo,{z:1.35},4);
   await diz('Demasiado tempo.',{dur:2.2});vivo(m);
   await diz('Não respiro.',{dur:2});vivo(m);
   maoTreme=0;coracao(70,.5);
-  await diz('Encolhe os ombros. Vai-se.');vivo(m);
+  await diz('Vai-se embora.');vivo(m);
   anima(V,{olhaK:0},.5);anima(V,{pescK:0},5);anima(alvo,{z:1.1},3);
   await diz('Coja Acém parte daqui a dez dias.');vivo(m);
-  await diz('Nós chegamos antes.',{grande:true,dur:2});vivo(m);
-  coracao(0);negro(true,1.2);await espera(1.3);vivo(m);
-};
-
-/* ---------- 10 · a espera ---------- */
-C10.guiao=async function(m){
-  musica(null,1);ambiente({rio:.05},1);fogoV=.05;fx.pulso=1;coracao(68,.9);respira=.3;
-  negro(false,2.5);await espera(3);vivo(m);
-  await diz('Madrugada.',{dur:2.2});vivo(m);
-  await espera(1.2);vivo(m);
-  await diz('Cem homens. Zero barulho.',{dur:2.8});vivo(m);
-  await espera(1.4);vivo(m);
-  await diz('Bebo água. Não tenho sede.',{dur:2.8});vivo(m);
-  await espera(1.2);vivo(m);
-  await diz('Hoje alguém morre.',{grande:true,dur:2.4});vivo(m);
+  await diz('Nós chegamos antes.',forte({dur:2,bum:.6}));vivo(m);
+  /* a espera */
+  musica(null,2);fogoV=.05;await anima(V,{escuroRio:.72},2.5);vivo(m);
+  fx.pulso=1;coracao(66,.9);anima(alvo,{x:.42,y:.55,z:1.25},6);
+  await diz('Madrugada.',{dur:2});vivo(m);
+  await diz('Cem homens. Nenhum barulho.',{dur:2.6});vivo(m);
+  await espera(1);vivo(m);
+  await diz('Hoje alguém morre.',forte({dur:2.4,bum:false}));vivo(m);
   fx.pulso=0;coracao(0);sino(.9,1);await espera(.5);vivo(m);
 };
+C9.prepara=function(){V.pescK=0;V.olhaK=0;redeOn=true;maoTreme=0;V.escuroRio=0};
 
-/* ---------- 11 · a batalha (o grito é automático) ---------- */
+/* ---------- 10 · a batalha: fecha o círculo ---------- */
+C11.prepara=function(){V.fumoA=0;V.cojaK=0;V.golpeK=0;V.cojaCai=0};
 C11.guiao=async function(m){
   ambiente({rio:.1,vento:.1},.5);sinoAflito=true;balanco=.6;
-  negro(false,.6);await espera(.8);vivo(m);
-  await diz('Um sino.',{dur:1.4});vivo(m);
-  await diz('Viram-nos.',{dur:1.6});vivo(m);
+  negro(false,.5);await espera(.6);vivo(m);
+  await diz('Um sino.',{dur:1.3});vivo(m);
+  await diz('Viram-nos.',{dur:1.5});vivo(m);
   anima(alvo,{x:.32,y:.55},2);
-  await diz('— Irmãos! A eles!',{quem:'António de Faria',dur:1.8});vivo(m);
+  await diz('— A eles!',{quem:'António de Faria',dur:1.6});vivo(m);
   ambiente({multidao:.5,rio:.1},.3);grito(2,2.2);tremor=1.4;
-  await diz('— Santiago!',{grande:true,dur:1.5,pausa:.1});vivo(m);
+  await diz('— Santiago!',forte({dur:1.4,pausa:.1}));vivo(m);
   musica('batalha',.4);setCinema(true);ambiente({multidao:.3,fumo:.3},.5);
-  for(let i=0;i<3;i++){canhao();flash(.55);tremor=2;V.fumoA=Math.min(1,V.fumoA+.35);await espera(.7);vivo(m)}
-  await diz('Fumo. Não se vê nada.');vivo(m);
+  for(let i=0;i<3;i++){canhao();flash(.55);tremor=2;V.fumoA=Math.min(1,V.fumoA+.35);await espera(.6);vivo(m)}
+  await diz('Fumo. Não vejo nada.');vivo(m);
   estrondo();tremor=2.5;anima(alvo,{x:.6,z:1.5},1.4);
-  await diz('Os barcos chocam. Salto.');vivo(m);
-  montaVinhetas([{r:[0,0,.5,1],mundo:M_COJA,cam0:{x:.5,y:.4,z:1.1},cam1:{z:1.35},dur:8,ent:'esq'}]);
+  await diz('Os barcos chocam.',{dur:1.5});vivo(m);
+  await diz('Salto.',forte({dur:1.2,bum:.8}));vivo(m);
+  montaVinhetas([{r:[0,0,.5,1],mundo:M_COJA,cam0:{x:.5,y:.4,z:1.1},cam1:{z:1.35},dur:10,ent:'esq'}]);
   await diz('E ali está ele.');vivo(m);
   await diz('— Galinhas brancas! Mulheres de barba!',{quem:'Coja Acém'});vivo(m);
-  vinhetas.paineis.push({r:[.5,0,.5,1],mundo:M_FARIA2,cam0:{x:.5,y:.4,z:1.1},cam1:{z:1.3},dur:8,ent:'dir',atraso:T-vinhetas.t0});
-  await diz('Faria vai direito a ele.');vivo(m);
-  await anima(V,{golpeK:1},.35,t=>t*t);vivo(m);
+  vinhetas.paineis.push({r:[.5,0,.5,1],mundo:M_FARIA2,cam0:{x:.5,y:.4,z:1.1},cam1:{z:1.3},dur:10,ent:'dir',atraso:T-vinhetas.t0});
+  await diz('Já viste isto.',{dur:2});vivo(m);
+  sobe(1.2);await diz('Agora vês como acaba.',{dur:1.8,pausa:.05});vivo(m);
+  await anima(V,{golpeK:1},.3,t=>t*t);vivo(m);
   fx.congela=true;silencio(.02);sinoAflito=false;flash(1);musica(null,.02);
-  await espera(1.6);vivo(m);
-  negro(true,.05);await espera(1.4);vivo(m);
-  fx.congela=false;cortaTudo();volta(.01);setCinema(false);
+  await espera(1.3);vivo(m);
+  /* o tempo volta, devagar, em silêncio */
+  fx.congela=false;volta(1.5);ambiente({vento:.12},.5);coracao(48,.8);
+  await anima(V,{cojaCai:1},2.6,t=>t*t);vivo(m);baque();
+  await diz('Coja Acém cai.',{dur:2});vivo(m);
+  await diz('Não se levanta.',{dur:2.2});vivo(m);
+  coracao(0);negro(true,.8);await espera(1.4);vivo(m);
+  cortaTudo();volta(.01);setCinema(false);vinhetas=null;
 };
 
-/* ---------- 12 · fecho ---------- */
+/* ---------- 11 · fecho ---------- */
 C12.guiao=async function(m){
   ambiente({vento:.18,rio:.1,fumo:.15},1);respira=.6;
   negro(false,3);anima(V,{fumoA:.15},10);
-  await espera(3);vivo(m);
+  await espera(2.8);vivo(m);
   await diz('O fumo levanta.');vivo(m);
-  await diz('Faria de pé. Calado.');vivo(m);
-  const e=await escolha('Olhar para Faria','Olhar para o rio');vivo(m);
+  await diz('O capitão, de pé. Calado.');vivo(m);
+  const e=await escolha('Olhar para o capitão','Olhar para o rio');vivo(m);
   if(e===0){anima(alvo,{x:.32,y:.5,z:1.9},2);await diz('Sangue na cara. Não é dele.');vivo(m)}
   else{anima(alvo,{x:.8,y:.66,z:1.4},2);await diz('Corpos no rio. Também dos nossos.');vivo(m)}
   anima(alvo,{x:.36,y:.56,z:1.2},2.5);
-  await diz('Dois anos de caçada.',{dur:2.2});vivo(m);
+  await diz('Sete meses de caça.',{dur:2.2});vivo(m);
   await diz('Uma manhã.',{dur:2.2});vivo(m);
   musica('tema',3);negro(true,2);await espera(2.2);vivo(m);
   await cartaz('No dia seguinte, içam velas.',{jaNegro:true,fica:true});vivo(m);
-  await cartaz('Próximo barco.',{jaNegro:true,fica:true,classe:'forte'});vivo(m);
-  await cartaz('Dezassete vezes vendido',{jaNegro:true,fica:true,classe:'forte',dur:3});vivo(m);
+  await cartaz('À procura do próximo barco.',{jaNegro:true,fica:true});vivo(m);
+  await cartaz('Fernão ainda não sabe.',{jaNegro:true,fica:true});vivo(m);
+  await cartaz('Isto é só o começo.',{jaNegro:true,fica:true,classe:'forte',dur:2.8});vivo(m);
 };
 
-CENAS.unshift(CA);
+CENAS=[CA,C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C11,C12];
+CA.nome='Abertura';C0.nome='Quem és';C6.nome='O vale';C9.nome='O espião';C11.nome='A batalha';
 
 /* =========================================================
    INTERFACE · título, menu, navegação
