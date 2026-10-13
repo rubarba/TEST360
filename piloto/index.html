@@ -84,6 +84,24 @@ body.comleg #sombra{opacity:1}
 #verdade h3{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--lanterna);font-weight:500}
 #verdade ul{margin:0;padding-left:18px;font-size:clamp(.98rem,1.4vw,1.1rem);line-height:1.55;color:var(--papel)}
 #verdade li{margin-bottom:8px}
+/* INTRO: bloco de texto de cinema */
+#bloco{position:fixed;inset:0;z-index:6;display:grid;place-items:center;pointer-events:none;padding:0 max(24px,8vw)}
+#bloco .col{max-width:34em;font-family:var(--serif);font-size:calc(clamp(1.05rem,2vw,1.6rem)*var(--esc));line-height:1.6;color:var(--papel);text-align:left}
+#bloco .col span{display:block;margin:0 0 .55em;opacity:0;transform:translateY(6px);transition:opacity 1.6s ease,transform 1.6s ease}
+#bloco .col span.on{opacity:.92;transform:none}
+#bloco .col span.data{font-family:var(--mono);font-size:.62em;letter-spacing:.3em;text-transform:uppercase;color:var(--lanterna);margin-bottom:1.4em}
+#bloco.sai .col span{opacity:0;transition:opacity 1.4s ease}
+/* CAIXAS DE RECITATIVO (BD) */
+#caixas{position:fixed;inset:0;z-index:6;pointer-events:none}
+.caixa{position:absolute;max-width:min(30ch,42vw);padding:.55em .8em;background:#e6dfcf;color:#15110d;border:2px solid #15110d;box-shadow:4px 4px 0 rgba(0,0,0,.55);
+  font:italic 500 calc(clamp(.95rem,1.7vw,1.45rem)*var(--esc))/1.35 var(--serif);opacity:0;transform:translateY(-6px);transition:opacity .45s ease,transform .45s ease}
+.caixa.on{opacity:1;transform:none}
+.caixa.forte{font-style:normal;font-weight:700;font-size:calc(clamp(1.3rem,2.6vw,2.2rem)*var(--esc));max-width:min(24ch,70vw);text-align:center}
+.caixa.sai{opacity:0;transition:opacity .6s}
+#seta{position:fixed;right:max(22px,env(safe-area-inset-right));bottom:calc(14px + 54px);z-index:6;font:600 26px/1 var(--serif);color:var(--lanterna);opacity:0;pointer-events:none;transition:opacity .4s}
+#seta.on{opacity:.9;animation:seta 1.4s ease-in-out infinite}
+@keyframes seta{50%{transform:translateX(6px)}}
+body.explora #caixas,body.explora #seta,body.explora #bloco{opacity:0}
 /* EXPLORAR (na pausa) */
 #explora{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;transition:opacity .5s}
 body.explora #explora{opacity:1}
@@ -171,6 +189,7 @@ body.limpo .hud .plano{display:none}
     <button class="item" id="bRecomecar" type="button" hidden>Recomeçar</button>
     <button class="item" id="bExplorar" type="button" hidden>Explorar a imagem</button>
     <button class="item" id="bPlanos" type="button">Escolher plano</button>
+    <button class="item" id="bModo" type="button">Modo: ler</button>
     <button class="item" id="bEcra2" type="button">Ecrã inteiro</button>
     <button class="item" id="bLetra" type="button">Legendas: média</button>
   </div>
@@ -315,18 +334,24 @@ const dica=$('#dica');function mostraDica(t){if(t){dica.textContent=t;dica.class
 
 /* ---------- vinhetas (BD viva) ----------
    paineis: [{r:[x,y,w,h] frações do ecrã útil, mundo, cam0, cam1, dur, ent:'esq'|'dir'|'cima'|'baixo'|'fade', atraso}] */
-function montaVinhetas(paineis){vinhetas={t0:T,paineis:paineis.map(p=>Object.assign({cam:novaCam(p.cam0)},p))};}
+function montaVinhetas(paineis,o={}){vinhetas={t0:T,papel:o.papel,parte:o.parte,base:o.base||{x:.5,y:.5,z:1},paineis:paineis.map(p=>Object.assign({cam:novaCam(p.cam0)},p))};}
 function desenhaVinhetas(t){
-  const m=Math.min(W,H)*.03,top=cinema?H*.11:0,alt=H-2*top;
-  cx.fillStyle='#050608';cx.fillRect(0,0,W,H);
+  const sk=vinhetas.parte?easeOut(clamp((t-vinhetas.t0)/.9,0,1)):1;
+  const m=Math.min(W,H)*.03*(vinhetas.papel?.8:1)*sk,top=cinema?H*.11:0,alt=H-2*top;
+  cx.fillStyle=vinhetas.papel?`rgb(${Math.round(5+225*sk)},${Math.round(6+217*sk)},${Math.round(8+199*sk)})`:'#050608';cx.fillRect(0,0,W,H);
   for(const p of vinhetas.paineis){if(!p.cam)p.cam=novaCam(p.cam0);const e=t-vinhetas.t0-(p.atraso||0);if(e<0)continue;
     const k=easeOut(clamp(e/.7,0,1)),kk=clamp(e/(p.dur||8),0,1);
-    for(const q in p.cam1)p.cam[q]=lerp(p.cam0[q]??(q==='z'?1:q==='r'?0:.5),p.cam1[q],ease(kk));
     let [x,y,w,h]=p.r;if(H>W*1.05)[x,y,w,h]=[y,x,h,w];const rect={x:m+x*(W-2*m),y:top+m+y*(alt-2*m),w:w*(W-2*m)-m*(x+w<.999?1:0),h:h*(alt-2*m)-m*(y+h<.999?1:0)};
-    const off=(1-k)*60;cx.save();cx.globalAlpha=k;
+    if(p.parte){const b=vinhetas.base,mw=p.mundo.W,mh=p.mundo.H,s0=Math.max(H/mh,W/mw)*b.z*1.06,vw=W/s0,vh=H/s0;
+      const px0=clamp(b.x*mw,vw/2,mw-vw/2),py0=clamp(b.y*mh,vh/2,mh-vh/2);
+      const R=[x*W,y*H,w*W,h*H];const wx=px0+(R[0]+R[2]/2-W/2)/s0,wy=py0+(R[1]+R[3]/2-H/2)/s0;
+      if(!p.c0){p.c0={x:wx/mw,y:wy/mh,z:s0/(Math.max(R[3]/mh,R[2]/mw)*1.06)};p.cam0=p.c0;Object.assign(p.cam,p.c0)}}
+    for(const q in p.cam1)p.cam[q]=lerp((p.cam0||{})[q]??(q==='z'?1:q==='r'?0:.5),p.cam1[q],ease(kk));
+    const off=(1-k)*60;cx.save();cx.globalAlpha=p.parte?1:k;
     if(p.ent==='esq')cx.translate(-off,0);else if(p.ent==='dir')cx.translate(off,0);else if(p.ent==='cima')cx.translate(0,-off);else if(p.ent==='baixo')cx.translate(0,off);
     vista(p.mundo,p.cam,rect,t);
-    cx.strokeStyle='rgba(233,227,213,.9)';cx.lineWidth=2;cx.strokeRect(rect.x+1,rect.y+1,rect.w-2,rect.h-2);
+    if(vinhetas.papel){cx.globalAlpha=sk;cx.strokeStyle='#15110d';cx.lineWidth=3;cx.strokeRect(rect.x+1.5,rect.y+1.5,rect.w-3,rect.h-3)}
+    else{cx.strokeStyle='rgba(233,227,213,.9)';cx.lineWidth=2;cx.strokeRect(rect.x+1,rect.y+1,rect.w-2,rect.h-2)}
     cx.restore();}
 }
 
@@ -1770,6 +1795,89 @@ verd.innerHTML=`<div class="ep">Depois do episódio</div><h1 style="white-space:
 document.body.appendChild(verd);
 {const _fim=fimEpisodio;fimEpisodio=function(){cortaTudo();musica('tema',2);hud.classList.add('fora');negro(false,2);verd.classList.remove('fora');
   $('#bVerdade').onclick=()=>{verd.classList.add('fora');_fim()}}}
+
+/* =========================================================
+   BD VIVA · modo Ler (clique) / Ver (filme), caixas de recitativo,
+   intro de cinema em bloco, tempestade em páginas
+   ========================================================= */
+let MODO='ler';try{if(localStorage.getItem('milhano-modo')==='ver')MODO='ver'}catch(e){}
+function aplicaModo(){$('#bModo').textContent=MODO==='ler'?'Modo: ler (avanças com clique)':'Modo: ver (avança sozinho)';try{localStorage.setItem('milhano-modo',MODO)}catch(e){}}
+aplicaModo();$('#bModo').addEventListener('click',()=>{MODO=MODO==='ler'?'ver':'ler';aplicaModo()});
+
+const caixasEl=document.createElement('div');caixasEl.id='caixas';document.body.appendChild(caixasEl);
+const setaEl=document.createElement('div');setaEl.id='seta';setaEl.textContent='›';document.body.appendChild(setaEl);
+const blocoEl=document.createElement('div');blocoEl.id='bloco';blocoEl.innerHTML='<div class="col"></div>';document.body.appendChild(blocoEl);
+
+/* esperar: no modo ler, pelo clique; no modo ver, pelo tempo (o clique adianta) */
+async function segue(dur,min=.4){const meu=tok;
+  if(MODO==='ler'){setaEl.classList.add('on');await esperaToque(1e9,min);setaEl.classList.remove('on')}
+  else await esperaToque(dur,min);
+  vivo(meu)}
+/* caixa de recitativo: x,y em frações do ecrã */
+function caixa(txt,o={}){const el=document.createElement('div');el.className='caixa'+(o.forte?' forte':'');el.textContent=txt;
+  if(o.centro){el.style.left='50%';el.style.top=((o.y??.42)*100)+'%';el.style.transform='translate(-50%,-50%)'}
+  else{if(o.dir!=null)el.style.right=(o.dir*100)+'%';else el.style.left=((o.x??.04)*100)+'%';el.style.top=((o.y??.08)*100)+'%'}
+  caixasEl.appendChild(el);void el.offsetWidth;el.classList.add('on');if(o.centro)el.style.transform='translate(-50%,-50%)';
+  if(o.bum){taiko(o.bum,mestre);tremor=Math.max(tremor,.7)}
+  return el}
+async function diz2(txt,o={}){caixa(txt,o);await segue(o.dur||Math.max(2.4,1.4+txt.length*.055))}
+function limpaCaixas(){caixasEl.querySelectorAll('.caixa').forEach(c=>{c.classList.add('sai');setTimeout(()=>c.remove(),700)})}
+{const _rep=repoe;repoe=function(){_rep();caixasEl.innerHTML='';setaEl.classList.remove('on');blocoEl.classList.remove('sai');blocoEl.querySelector('.col').innerHTML=''}}
+
+/* ---------- INTRO: bloco de texto, depois palavras sozinhas ---------- */
+const BLOCO=['Mar da China · 1540',
+  'Há menos de trinta anos que os primeiros portugueses chegaram a estas águas.',
+  'Vieram fazer comércio. Ficaram para tudo o resto.',
+  'Aqui, o mesmo homem pode ser mercador de manhã, soldado à tarde e pirata à noite.',
+  'Um deles viu tudo. E escreveu.'];
+C0.guiao=async function(m){
+  musica('tensao',2);ambiente({vento:.12,mar:.12},2);
+  await espera(1.4);vivo(m);negro(false,.8);await espera(.6);vivo(m);
+  const col=blocoEl.querySelector('.col');col.innerHTML=BLOCO.map((l,i)=>`<span${i===0?' class="data"':''}>${l}</span>`).join('');
+  const linhas=[...col.children];
+  for(const [i,l] of linhas.entries()){l.classList.add('on');pena&&pena();await esperaToque(i===0?1.8:Math.max(2.6,1.2+l.textContent.length*.045),.3);vivo(m)}
+  await segue(3);
+  blocoEl.classList.add('sai');await espera(1.8);vivo(m);col.innerHTML='';blocoEl.classList.remove('sai');
+  await espera(.6);vivo(m);
+  await diz('Tu és Fernão Mendes Pinto.',centro(forte({dur:3})));vivo(m);
+  await diz('Não és herói.',centro({dur:2.2,pausa:.8}));vivo(m);
+  await diz('És testemunha.',centro(forte({dur:2.8})));vivo(m);
+  sobe(1.4);await espera(1.4);vivo(m);musica(null,.3);
+  await cartaz('O Milhano',{classe:'forte',jaNegro:true,fica:true,dur:2.4});vivo(m);
+};
+
+/* ---------- TEMPESTADE em páginas de BD ---------- */
+TRAV_CENA['Tempestade']=0;
+C1.guiao=async function(m){
+  musica('tempestade',2);ambiente({vento:.55,chuva:.14,mar:.4},1);balanco=.45;respira=.5;
+  Object.assign(cam,novaCam({x:.4,y:.48,z:1.14}));alvo=novaCam({x:.4,y:.48,z:1.14});
+  anima(alvo,{x:.5,y:.5,z:1.02},16,t=>t);
+  await espera(1.2);vivo(m);negro(false,2.6);await espera(2.4);vivo(m);
+  /* página 1 · a ilustração inteira, para contemplar */
+  madeira(.6);
+  await diz2('Doze dias numa ilha à espera de vento.',{x:.05,y:.14});
+  await diz2('Há sete meses que caçamos um pirata.',{x:.05,y:.3});
+  await segue(3.5,.6);
+  /* a página parte-se em vinhetas */
+  limpaCaixas();await anima(alvo,{x:.5,y:.5,z:1},.8);vivo(m);
+  madeira(1);tremor=.4;
+  montaVinhetas([
+    {r:[0,0,.3,1],mundo:M_TEMP,parte:true,cam1:{x:.11,y:.42,z:2.9},dur:10},
+    {r:[.3,0,.7,.56],mundo:M_TEMP,parte:true,cam1:{x:.62,y:.3,z:1.7},dur:10},
+    {r:[.3,.56,.7,.44],mundo:M_TEMP,parte:true,cam1:{x:.5,y:.6,z:2},dur:10}],{papel:true,parte:true,base:{x:.5,y:.5,z:1}});
+  await espera(1.2);vivo(m);
+  await diz2('Roubou tudo ao nosso capitão.',{x:.33,y:.12});
+  await diz2('Ninguém sabe onde está.',{dir:.03,y:.61});
+  await diz2('Os homens estão fartos.',{x:.025,y:.82});
+  await segue(3,.6);
+  /* página 2 · o relâmpago */
+  limpaCaixas();vinhetas=null;Object.assign(cam,novaCam({x:.64,y:.34,z:2.3}));alvo=novaCam({x:.62,y:.36,z:1.9});
+  raio(1.6);tremor=1.3;balanco=1;
+  await espera(.5);vivo(m);
+  await diz2('Esta noite, isso deixa de importar.',{centro:true,y:.72,forte:true,bum:.9,dur:3});
+  limpaCaixas();raio(1.8);tremor=1.6;flash(1);await espera(.25);vivo(m);
+};
+C1.prepara=function(){proxRaio=T+4;V.agua=0;this.maosDy=0;this.maosTremor=0};
 
 /* =========================================================
    INTERFACE · título, menu, navegação
