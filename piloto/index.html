@@ -29,11 +29,9 @@ body.comleg #sombra{opacity:1}
 #leg{position:fixed;left:50%;bottom:calc(16vh + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);width:min(92vw,46rem);text-align:center;z-index:5;
   opacity:0;transition:opacity .45s,transform .45s;pointer-events:none}
 #leg.on{opacity:1;transform:translate(-50%,0)}
-#leg::before{content:'';position:absolute;left:-14%;right:-14%;top:-55%;bottom:-55%;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(5,7,10,.7) 0%,rgba(5,7,10,.45) 45%,rgba(5,7,10,0) 100%)}
-#leg.centro::before{top:-90%;bottom:-90%}
+
 #leg .quem{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--lanterna);margin-bottom:6px;text-shadow:0 1px 6px #000}
-#leg p{margin:0;font-style:italic;font-weight:400;font-size:calc(clamp(1.25rem,2.7vw,1.95rem)*var(--esc));line-height:1.35;color:#fff;
+#leg p{margin:0;font-style:italic;font-weight:400;font-size:calc(clamp(1.3rem,3vw,2.6rem)*var(--esc));line-height:1.35;color:#fff;
   text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 2px #000,0 0 28px rgba(0,0,0,.7);text-wrap:balance}
 #leg.fala p{font-style:normal}
 #leg.centro{bottom:auto;top:50%;transform:translate(-50%,-40%)}#leg.centro.on{transform:translate(-50%,-50%)}
@@ -157,6 +155,7 @@ body.limpo .hud .plano{display:none}
     <button class="item" id="bRecomecar" type="button" hidden>Recomeçar</button>
     <button class="item" id="bPlanos" type="button">Escolher plano</button>
     <button class="item" id="bEcra2" type="button">Ecrã inteiro</button>
+    <button class="item" id="bLetra" type="button">Legendas: média</button>
   </div>
   <div class="planos" id="listaPlanos" hidden></div>
   <div class="nota">Melhor com auscultadores · ecrã deitado · desenhos provisórios</div>
@@ -1566,28 +1565,25 @@ C0.ecra=function(g,t){raioAuto();
     for(const m of manchas){const r=R*m.r*(1-m.d);g.beginPath();g.arc(cx0+Math.cos(m.a)*R*.55,cy0+Math.sin(m.a)*R*.55,r*.55,0,7);g.fill()}
     g.restore()}
 };
+C0.ecra=function(){};
 C0.guiao=async function(m){
-  V.papel=1;V.assina=0;V.tinta=0;
-  negro(false,1.2);await espera(1.4);vivo(m);
-  const meu=tok;let fim=false;(async()=>{while(!fim&&meu===tok){pena();await espera(.07)}})();
-  await anima(V,{assina:1},3.4,t=>t);fim=true;vivo(m);
-  await espera(1.6);vivo(m);
-  musica('tensao',2);ambiente({vento:.25,chuva:.06,mar:.2},1.5);fx.escuro=.55;fx.desfoque=4;balanco=.4;
-  taiko(.6,mestre);await anima(V,{tinta:1},1.8,t=>t*t);vivo(m);
-  V.papel=0;anima(alvo,{x:.45,z:1.05},24,t=>t);
-  await anima(V,{tinta:0},2.2);vivo(m);
-  await diz('1540.',centro({dur:1.6}));vivo(m);
+  musica('tensao',2);ambiente({vento:.12,mar:.12},2);
+  await espera(1.6);vivo(m);negro(false,.8);await espera(.8);vivo(m);
+  await diz('1540.',centro({dur:1.8}));vivo(m);
   await diz('Mar da China.',centro({dur:2}));vivo(m);
+  await diz('Os portugueses chegaram aqui há menos de trinta anos.',centro({dur:3}));vivo(m);
+  await diz('Comerciantes. Soldados. Piratas.',centro({dur:2.6}));vivo(m);
+  await diz('Às vezes, os três no mesmo homem.',centro({dur:2.6}));vivo(m);
   await diz('Tu és Fernão Mendes Pinto.',centro(forte({dur:2.8})));vivo(m);
   await diz('Português. Longe de casa. Sem nada.',centro());vivo(m);
   await diz('Não és herói. Não és soldado.',centro());vivo(m);
   await diz('És testemunha.',centro(forte({dur:2.6})));vivo(m);
   await diz('Tudo o que vais ver, ele viu.',centro({dur:2.4}));vivo(m);
   await diz('E escreveu.',centro({dur:2.2}));vivo(m);
-  sobe(1.4);negro(true,1.2);await espera(1.3);vivo(m);musica(null,.3);
+  sobe(1.4);await espera(1.4);vivo(m);musica(null,.3);
   await cartaz('O Milhano',{classe:'forte',jaNegro:true,fica:true,dur:2.4});vivo(m);
 };
-C0.prepara=function(){proxRaio=T+6;V.agua=0;V.papel=1;V.assina=0;V.tinta=0};
+C0.prepara=function(){this.mundo=null;V.papel=0;V.tinta=0};
 
 /* ---------- reflexo do Fernão na água (plano do espião) ---------- */
 const rosto=document.createElement('canvas');rosto.width=600;rosto.height=700;
@@ -1799,6 +1795,12 @@ if(!podeEcra){$('#bEcra').hidden=true;$('#bEcra2').hidden=true}
 $('#bEcra').addEventListener('click',e=>{e.stopPropagation();ecraInteiro()});
 $('#bEcra2').addEventListener('click',ecraInteiro);
 addEventListener('keydown',e=>{if(e.key==='h'||e.key==='H')setLimpo(!limpo);if(e.key==='f'||e.key==='F')ecraInteiro();if((e.key==='p'||e.key==='P')&&comecou)pausado?retoma():pausa()});
+
+/* ---------- tamanho das legendas ---------- */
+const TAM=[['pequena',.82],['média',1],['grande',1.25],['muito grande',1.5]];let iTam=1;
+function aplicaTam(){document.documentElement.style.setProperty('--esc',TAM[iTam][1]);$('#bLetra').textContent='Legendas: '+TAM[iTam][0];try{localStorage.setItem('milhano-letra',iTam)}catch(e){}}
+try{const v=localStorage.getItem('milhano-letra');if(v!==null&&TAM[+v])iTam=+v}catch(e){}
+aplicaTam();$('#bLetra').addEventListener('click',()=>{iTam=(iTam+1)%TAM.length;aplicaTam()});
 
 </script>
 
