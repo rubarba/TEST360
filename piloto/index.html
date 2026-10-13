@@ -117,6 +117,18 @@ body.explora #explora .topo .btn{pointer-events:auto}
   font:italic 400 15px/1.45 var(--serif);color:var(--papel);text-align:left;opacity:0;pointer-events:none;transition:opacity .3s}
 .marca.dir .txt{left:auto;right:38px;border-left:0;border-right:2px solid var(--lanterna)}
 .marca.on .txt{opacity:1}
+/* HUD discreto: esconde-se sozinho, sem botões de navegação à vista */
+.hud .nav{display:none}
+.hud .btn{background:none;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;opacity:.5}
+.hud .btn:hover{opacity:1;border-color:transparent}
+body.quieto .hud{opacity:0;transition:opacity 1.2s}
+body.quieto #cv{cursor:none}
+#prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(233,227,213,.08)}
+#prog i{display:block;height:100%;width:0;background:rgba(227,164,76,.55);transition:width 1.2s ease}
+.lado{position:absolute;left:max(14px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);font:400 34px/1 var(--serif);color:var(--papel);opacity:0;transition:opacity .3s}
+body.naBorda .lado{opacity:.45}
+#seta{transition:opacity .3s}
+#seta.on{transition:opacity .8s 2.8s}
 /* HUD */
 .hud{position:fixed;inset:0;z-index:7;pointer-events:none;transition:opacity .6s}
 .hud.fora{opacity:0}
@@ -174,6 +186,8 @@ body.limpo .hud .plano{display:none}
     </span>
   </div>
   <div class="plano"><b id="nPlano">1</b> / <span id="nTotal">13</span> · <span id="tPlano">Tempestade</span></div>
+  <div id="prog"><i></i></div>
+  <div class="lado" id="ladoVoltar">‹</div>
   <div class="nav">
     <button class="btn" id="bVoltar" type="button">‹ Voltar</button>
     <button class="btn" id="bSeguir" type="button">Continuar ›</button>
@@ -261,7 +275,7 @@ cv.addEventListener('pointerdown',e=>{arr={x:e.clientX,y:e.clientY,cx:alvo.ax,cy
 cv.addEventListener('pointermove',e=>{if(!arr)return;const dx=e.clientX-arr.x,dy=e.clientY-arr.y;arr.mov=Math.max(arr.mov,Math.hypot(dx,dy));
   if(arrastar&&!vinhetas){alvo.ax=clamp(arr.cx-dx/W*.55,-.5,.5);alvo.ay=clamp(arr.cy-dy/H*.35,-.3,.3)}
   movimento(Math.hypot(dx,dy))});
-cv.addEventListener('pointerup',e=>{const curto=arr&&arr.mov<10;arr=null;if(curto)toque()});
+cv.addEventListener('pointerup',e=>{const curto=arr&&arr.mov<10;arr=null;if(!curto)return;if(e.clientX<W*.16&&typeof recua==='function'&&!pausado)recua();else toque()});
 let giro=null;
 function liga_giro(){
   const pede=()=>{addEventListener('deviceorientation',e=>{if(e.alpha==null)return;const o=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
@@ -1931,6 +1945,14 @@ const TAM=[['pequena',.82],['média',1],['grande',1.25],['muito grande',1.5]];le
 function aplicaTam(){document.documentElement.style.setProperty('--esc',TAM[iTam][1]);$('#bLetra').textContent='Legendas: '+TAM[iTam][0];try{localStorage.setItem('milhano-letra',iTam)}catch(e){}}
 try{const v=localStorage.getItem('milhano-letra');if(v!==null&&TAM[+v])iTam=+v}catch(e){}
 aplicaTam();$('#bLetra').addEventListener('click',()=>{iTam=(iTam+1)%TAM.length;aplicaTam()});
+
+/* ---------- HUD discreto ---------- */
+function recua(){$('#bVoltar').click()}
+let tQuieto=null;document.body.classList.add('quieto');
+function acorda(e){document.body.classList.remove('quieto');clearTimeout(tQuieto);tQuieto=setTimeout(()=>document.body.classList.add('quieto'),2200);
+  if(e&&e.clientX!=null)document.body.classList.toggle('naBorda',e.clientX<innerWidth*.16&&comecou&&!pausado)}
+addEventListener('pointermove',acorda);addEventListener('pointerdown',acorda);addEventListener('keydown',()=>acorda());
+{const _c=correCena;correCena=function(i,o){$('#prog i').style.width=((i+1)/CENAS.length*100)+'%';return _c(i,o)}}
 
 /* =========================================================
    OLHAR · o rato guia o olhar do Fernão; na pausa, explorar a imagem
