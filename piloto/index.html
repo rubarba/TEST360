@@ -84,6 +84,21 @@ body.comleg #sombra{opacity:1}
 #verdade h3{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--lanterna);font-weight:500}
 #verdade ul{margin:0;padding-left:18px;font-size:clamp(.98rem,1.4vw,1.1rem);line-height:1.55;color:var(--papel)}
 #verdade li{margin-bottom:8px}
+/* EXPLORAR (na pausa) */
+#explora{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;transition:opacity .5s}
+body.explora #explora{opacity:1}
+body.explora #leg,body.explora #sombra,body.explora .hud{opacity:0!important;pointer-events:none}
+body.explora #cv{cursor:grab}body.explora #cv:active{cursor:grabbing}
+body.explora #explora .topo .btn{pointer-events:auto}
+#explora .topo .btn{pointer-events:none}
+#explora .dica{position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--papel);background:rgba(7,9,13,.55);padding:8px 14px;white-space:nowrap}
+.marca{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:1.5px solid var(--lanterna);background:rgba(7,9,13,.35);pointer-events:auto;cursor:pointer;
+  display:grid;place-items:center;color:var(--lanterna);font:600 15px/1 var(--serif);animation:pulsa 2.4s ease-in-out infinite}
+@keyframes pulsa{50%{box-shadow:0 0 0 8px rgba(227,164,76,0)}0%,100%{box-shadow:0 0 0 0 rgba(227,164,76,.45)}}
+.marca .txt{position:absolute;left:38px;top:50%;transform:translateY(-50%);width:min(300px,60vw);padding:12px 14px;background:rgba(7,9,13,.85);border-left:2px solid var(--lanterna);
+  font:italic 400 15px/1.45 var(--serif);color:var(--papel);text-align:left;opacity:0;pointer-events:none;transition:opacity .3s}
+.marca.dir .txt{left:auto;right:38px;border-left:0;border-right:2px solid var(--lanterna)}
+.marca.on .txt{opacity:1}
 /* HUD */
 .hud{position:fixed;inset:0;z-index:7;pointer-events:none;transition:opacity .6s}
 .hud.fora{opacity:0}
@@ -154,6 +169,7 @@ body.limpo .hud .plano{display:none}
   <div class="menu">
     <button class="cta" id="bComecar" type="button">Começar</button>
     <button class="item" id="bRecomecar" type="button" hidden>Recomeçar</button>
+    <button class="item" id="bExplorar" type="button" hidden>Explorar a imagem</button>
     <button class="item" id="bPlanos" type="button">Escolher plano</button>
     <button class="item" id="bEcra2" type="button">Ecrã inteiro</button>
     <button class="item" id="bLetra" type="button">Legendas: média</button>
@@ -1803,5 +1819,67 @@ const TAM=[['pequena',.82],['média',1],['grande',1.25],['muito grande',1.5]];le
 function aplicaTam(){document.documentElement.style.setProperty('--esc',TAM[iTam][1]);$('#bLetra').textContent='Legendas: '+TAM[iTam][0];try{localStorage.setItem('milhano-letra',iTam)}catch(e){}}
 try{const v=localStorage.getItem('milhano-letra');if(v!==null&&TAM[+v])iTam=+v}catch(e){}
 aplicaTam();$('#bLetra').addEventListener('click',()=>{iTam=(iTam+1)%TAM.length;aplicaTam()});
+
+/* =========================================================
+   OLHAR · o rato guia o olhar do Fernão; na pausa, explorar a imagem
+   ========================================================= */
+/* ---------- 1. durante o filme: a câmara segue o rato de leve ---------- */
+const OLHAR={ax:0,ay:0,x:0,y:0};
+const ratoFino=matchMedia('(pointer:fine)').matches;
+addEventListener('pointermove',e=>{if(!ratoFino)return;OLHAR.ax=(e.clientX/innerWidth-.5)*2;OLHAR.ay=(e.clientY/innerHeight-.5)*2});
+document.addEventListener('pointerleave',()=>{OLHAR.ax=0;OLHAR.ay=0});
+
+/* ---------- 2. na pausa: explorar a imagem ---------- */
+const NOTAS=new Map([
+  [M_TEMP,[
+    {x:.062,y:.3,t:'Lanterna de corno. O vidro era caro; a luz passava por lâminas finas de corno raspado.'},
+    {x:.62,y:.42,dir:true,t:'Juncos chineses. Os portugueses compravam ou tomavam estes barcos e navegavam-nos com velas de esteira e bambu.'}]]
+]);
+let explorando=false;const EX={x:.5,y:.5,z:1,toques:new Map(),d0:0,z0:1};
+const exEl=document.createElement('div');exEl.id='explora';
+exEl.innerHTML='<div class="topo"><button class="btn" id="bSairExp" type="button">‹ Voltar ao menu</button><span></span></div><div class="marcas"></div><div class="dica">Arrasta para olhar · roda ou pinça para aproximar</div>';
+document.body.appendChild(exEl);
+const marcasEl=exEl.querySelector('.marcas');
+function mundoAtual(){return cena&&cena.mundo}
+function limitaEX(){const m=mundoAtual();if(!m)return;EX.z=clamp(EX.z,1,3.2);const s=Math.max(H/m.H,W/m.W)*EX.z*1.06;const fx=W/s/m.W,fy=H/s/m.H;
+  EX.x=clamp(EX.x,fx/2,1-fx/2);EX.y=clamp(EX.y,fy/2,1-fy/2)}
+function abreExplorar(){const m=mundoAtual();if(!m)return;explorando=true;Object.assign(EX,{x:cam.x,y:cam.y,z:Math.max(1,cam.z)});limitaEX();
+  titulo.classList.add('fora');document.body.classList.add('explora');
+  marcasEl.innerHTML=(NOTAS.get(m)||[]).map((n,i)=>`<div class="marca${n.dir?' dir':''}" data-i="${i}">+<div class="txt">${n.t}</div></div>`).join('')}
+function fechaExplorar(){explorando=false;alvo.ax=0;alvo.ay=0;document.body.classList.remove('explora');marcasEl.innerHTML='';titulo.classList.remove('fora')}
+$('#bExplorar').addEventListener('click',abreExplorar);
+$('#bSairExp').addEventListener('click',fechaExplorar);
+marcasEl.addEventListener('click',e=>{const m=e.target.closest('.marca');if(!m)return;const on=!m.classList.contains('on');marcasEl.querySelectorAll('.marca').forEach(x=>x.classList.remove('on'));if(on)m.classList.add('on')});
+addEventListener('keydown',e=>{if(explorando&&(e.key==='Escape'||e.key==='p'||e.key==='P')){e.stopImmediatePropagation();fechaExplorar()}},true);
+/* o botão só aparece quando há imagem para explorar */
+{const _pausa=pausa;pausa=function(){_pausa();$('#bExplorar').hidden=!mundoAtual()}}
+{const _ret=retoma;retoma=function(){if(explorando)fechaExplorar();$('#bExplorar').hidden=true;_ret()}}
+$('#bMenu').addEventListener('click',()=>{$('#bExplorar').hidden=!mundoAtual()});
+{const _fim=fimEpisodio;fimEpisodio=function(){$('#bExplorar').hidden=true;_fim()}}
+/* arrastar e aproximar */
+cv.addEventListener('pointerdown',e=>{if(!explorando)return;EX.toques.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(EX.toques.size===2){const [a,b]=[...EX.toques.values()];EX.d0=Math.hypot(a.x-b.x,a.y-b.y);EX.z0=EX.z}});
+cv.addEventListener('pointermove',e=>{if(!explorando||!EX.toques.has(e.pointerId))return;const p=EX.toques.get(e.pointerId),m=mundoAtual();
+  if(EX.toques.size===1&&m){const s=Math.max(H/m.H,W/m.W)*EX.z*1.06;EX.x-=(e.clientX-p.x)/s/m.W;EX.y-=(e.clientY-p.y)/s/m.H}
+  p.x=e.clientX;p.y=e.clientY;
+  if(EX.toques.size===2){const [a,b]=[...EX.toques.values()];EX.z=EX.z0*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,EX.d0)}
+  limitaEX()});
+const largaToque=e=>EX.toques.delete(e.pointerId);
+cv.addEventListener('pointerup',largaToque);cv.addEventListener('pointercancel',largaToque);
+cv.addEventListener('wheel',e=>{if(!explorando)return;e.preventDefault();EX.z*=Math.exp(-e.deltaY*.0015);limitaEX()},{passive:false});
+/* na exploração, mostra-se o mundo inteiro mesmo que a cena esteja numa vinheta */
+{const _dv=desenhaVinhetas;desenhaVinhetas=function(t){if(explorando&&cena&&cena.mundo){vista(cena.mundo,novaCam(),{x:0,y:0,w:W,h:H},t);return}return _dv(t)}}
+
+/* ---------- a câmara ---------- */
+{const _v=vista;
+  vista=function(mundo,cm,rect,t,ez){
+    const ecraTodo=cena&&mundo===cena.mundo&&rect.w===W&&rect.h===H;
+    if(explorando&&ecraTodo){const r=_v(mundo,novaCam({x:EX.x,y:EX.y,z:EX.z}),rect,performance.now()/1000,1);posMarcas(mundo);return r}
+    if(ecraTodo&&!vinhetas&&!pausado){OLHAR.x=lerp(OLHAR.x,OLHAR.ax,.035);OLHAR.y=lerp(OLHAR.y,OLHAR.ay,.035);
+      cm=Object.assign({},cm,{x:cm.x+OLHAR.x*.028/Math.max(1,cm.z),y:cm.y+OLHAR.y*.02/Math.max(1,cm.z),r:(cm.r||0)+OLHAR.x*.004})}
+    return _v(mundo,cm,rect,t,ez)};}
+function posMarcas(m){const s=Math.max(H/m.H,W/m.W)*EX.z*1.06,vw=W/s,vh=H/s;
+  const px=clamp(EX.x*m.W,vw/2,m.W-vw/2),py=clamp(EX.y*m.H,vh/2,m.H-vh/2);
+  marcasEl.querySelectorAll('.marca').forEach(el=>{const n=NOTAS.get(m)[+el.dataset.i];el.style.left=(W/2+(n.x*m.W-px)*s)+'px';el.style.top=(H/2+(n.y*m.H-py)*s)+'px'})}
 
 </script>
