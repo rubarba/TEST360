@@ -117,16 +117,34 @@ body.explora #explora .topo .btn{pointer-events:auto}
   font:italic 400 15px/1.45 var(--serif);color:var(--papel);text-align:left;opacity:0;pointer-events:none;transition:opacity .3s}
 .marca.dir .txt{left:auto;right:38px;border-left:0;border-right:2px solid var(--lanterna)}
 .marca.on .txt{opacity:1}
+/* CURSOR próprio (só rato) */
+body.cur #cv,body.cur.quieto #cv{cursor:none}
+body.cur.explora #cv{cursor:none}
+#cursor{position:fixed;left:0;top:0;z-index:9;pointer-events:none;width:0;height:0;opacity:0;transition:opacity .4s}
+body.cur.dentro #cursor{opacity:1}
+#cursor i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(233,227,213,.85);box-sizing:border-box;
+  display:grid;place-items:center;font:600 15px/1 var(--serif);color:var(--lanterna);transition:transform .35s ease,border-color .35s,background .35s,opacity .35s}
+#cursor i::after{content:''}
+#cursor.acao i{transform:scale(.4);opacity:.35;background:rgba(233,227,213,.8)}
+#cursor.espera i{transform:scale(1.35);border-color:var(--lanterna);animation:curPulsa 1.6s ease-in-out infinite}
+#cursor.espera i::after{content:'›';transform:translate(1px,-1px)}
+#cursor.borda i{transform:scale(1.35);border-color:rgba(233,227,213,.85);animation:none}
+#cursor.borda i::after{content:'‹';color:var(--papel);transform:translate(-1px,-1px)}
+#cursor.explora i{transform:scale(1.6);border-color:rgba(233,227,213,.7)}
+#cursor.explora.carrega i{transform:scale(1.1);background:rgba(233,227,213,.18)}
+@keyframes curPulsa{50%{box-shadow:0 0 0 7px rgba(227,164,76,0)}0%,100%{box-shadow:0 0 0 0 rgba(227,164,76,.4)}}
+body.cur #seta{display:none}
+body.cur.quieto #cursor:not(.espera):not(.explora){opacity:0}
 /* HUD discreto: esconde-se sozinho, sem botões de navegação à vista */
 .hud .nav{display:none}
 .hud .btn{background:none;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;opacity:.5}
 .hud .btn:hover{opacity:1;border-color:transparent}
 body.quieto .hud{opacity:0;transition:opacity 1.2s}
-body.quieto #cv{cursor:none}
 #prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(233,227,213,.08)}
 #prog i{display:block;height:100%;width:0;background:rgba(227,164,76,.55);transition:width 1.2s ease}
 .lado{position:absolute;left:max(14px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);font:400 34px/1 var(--serif);color:var(--papel);opacity:0;transition:opacity .3s}
 body.naBorda .lado{opacity:.45}
+body.cur .lado{display:none}
 #seta{transition:opacity .3s}
 #seta.on{transition:opacity .8s 2.8s}
 /* HUD */
@@ -1953,6 +1971,27 @@ function acorda(e){document.body.classList.remove('quieto');clearTimeout(tQuieto
   if(e&&e.clientX!=null)document.body.classList.toggle('naBorda',e.clientX<innerWidth*.16&&comecou&&!pausado)}
 addEventListener('pointermove',acorda);addEventListener('pointerdown',acorda);addEventListener('keydown',()=>acorda());
 {const _c=correCena;correCena=function(i,o){$('#prog i').style.width=((i+1)/CENAS.length*100)+'%';return _c(i,o)}}
+
+/* ---------- cursor próprio ---------- */
+if(matchMedia('(pointer:fine)').matches){
+  const cur=document.createElement('div');cur.id='cursor';cur.innerHTML='<i></i>';document.body.appendChild(cur);document.body.classList.add('cur');
+  const P={x:innerWidth/2,y:innerHeight/2,cx:innerWidth/2,cy:innerHeight/2};let carrega=false;
+  addEventListener('pointermove',e=>{P.x=e.clientX;P.y=e.clientY});
+  addEventListener('pointerdown',()=>carrega=true);addEventListener('pointerup',()=>carrega=false);
+  document.addEventListener('pointerleave',()=>document.body.classList.remove('dentro'));
+  function estado(){
+    const sobreCanvas=document.elementFromPoint(P.x,P.y)===cv;
+    const ativo=(comecou&&!pausado)||document.body.classList.contains('explora');
+    document.body.classList.toggle('dentro',sobreCanvas&&ativo);
+    let e='acao';
+    if(document.body.classList.contains('explora'))e='explora';
+    else if(comecou&&!pausado&&P.x<innerWidth*.16)e='borda';
+    else if(esperas.some(w=>w.toque&&w.fim-T>60&&T>=w.min))e='espera';
+    cur.className=e+(carrega?' carrega':'');
+    P.cx+=(P.x-P.cx)*.45;P.cy+=(P.y-P.cy)*.45;cur.style.transform=`translate(${P.cx}px,${P.cy}px)`;
+    requestAnimationFrame(estado)}
+  requestAnimationFrame(estado);
+}
 
 /* =========================================================
    OLHAR · o rato guia o olhar do Fernão; na pausa, explorar a imagem
