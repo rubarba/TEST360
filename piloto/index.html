@@ -86,10 +86,10 @@ body.comleg #sombra{opacity:1}
 #verdade li{margin-bottom:8px}
 /* INTRO: bloco de texto de cinema */
 #bloco{position:fixed;inset:0;z-index:6;display:grid;place-items:center;pointer-events:none;padding:0 max(24px,8vw)}
-#bloco .col{max-width:34em;font-family:var(--serif);font-size:calc(clamp(1.05rem,2vw,1.6rem)*var(--esc));line-height:1.6;color:var(--papel);text-align:left}
-#bloco .col span{display:block;margin:0 0 .55em;opacity:0;transform:translateY(6px);transition:opacity 1.6s ease,transform 1.6s ease}
-#bloco .col span.on{opacity:.92;transform:none}
-#bloco .col span.data{font-family:var(--mono);font-size:.62em;letter-spacing:.3em;text-transform:uppercase;color:var(--lanterna);margin-bottom:1.4em}
+#bloco .col{max-width:30em;font-family:var(--serif);font-size:calc(clamp(1.1rem,2.1vw,1.7rem)*var(--esc));line-height:1.55;color:var(--papel);text-align:center}
+#bloco .col span{display:block;margin:0 0 .9em;opacity:0;transition:opacity 1.8s ease}
+#bloco .col span.on{opacity:.94}
+#bloco .col span.data{font-size:.8em;letter-spacing:.32em;text-transform:uppercase;margin-bottom:1.8em;color:var(--papel)}
 #bloco.sai .col span{opacity:0;transition:opacity 1.4s ease}
 /* CAIXAS DE RECITATIVO (BD) */
 #caixas{position:fixed;inset:0;z-index:6;pointer-events:none}
@@ -1820,7 +1820,9 @@ function caixa(txt,o={}){const el=document.createElement('div');el.className='ca
   caixasEl.appendChild(el);void el.offsetWidth;el.classList.add('on');if(o.centro)el.style.transform='translate(-50%,-50%)';
   if(o.bum){taiko(o.bum,mestre);tremor=Math.max(tremor,.7)}
   return el}
-async function diz2(txt,o={}){caixa(txt,o);await segue(o.dur||Math.max(2.4,1.4+txt.length*.055))}
+async function diz2(txt,o={}){const meu=tok;
+  if(MODO==='ler'){setaEl.classList.add('on');try{await diz(txt,Object.assign({},o,{dur:1e9}))}finally{setaEl.classList.remove('on')}}
+  else await diz(txt,o);vivo(meu)}
 function limpaCaixas(){caixasEl.querySelectorAll('.caixa').forEach(c=>{c.classList.add('sai');setTimeout(()=>c.remove(),700)})}
 {const _rep=repoe;repoe=function(){_rep();caixasEl.innerHTML='';setaEl.classList.remove('on');blocoEl.classList.remove('sai');blocoEl.querySelector('.col').innerHTML=''}}
 
@@ -1835,8 +1837,8 @@ C0.guiao=async function(m){
   await espera(1.4);vivo(m);negro(false,.8);await espera(.6);vivo(m);
   const col=blocoEl.querySelector('.col');col.innerHTML=BLOCO.map((l,i)=>`<span${i===0?' class="data"':''}>${l}</span>`).join('');
   const linhas=[...col.children];
-  for(const [i,l] of linhas.entries()){l.classList.add('on');pena&&pena();await esperaToque(i===0?1.8:Math.max(2.6,1.2+l.textContent.length*.045),.3);vivo(m)}
-  await segue(3);
+  for(const [i,l] of linhas.entries()){l.classList.add('on');await esperaToque(i===0?1.8:Math.max(2.4,1+l.textContent.length*.04),.3);vivo(m)}
+  setaEl.classList.add('on');await esperaToque(1e9,.6);setaEl.classList.remove('on');vivo(m);
   blocoEl.classList.add('sai');await espera(1.8);vivo(m);col.innerHTML='';blocoEl.classList.remove('sai');
   await espera(.6);vivo(m);
   await diz('Tu és Fernão Mendes Pinto.',centro(forte({dur:3})));vivo(m);
@@ -1855,27 +1857,29 @@ C1.guiao=async function(m){
   await espera(1.2);vivo(m);negro(false,2.6);await espera(2.4);vivo(m);
   /* página 1 · a ilustração inteira, para contemplar */
   madeira(.6);
-  await diz2('Doze dias numa ilha à espera de vento.',{x:.05,y:.14});
-  await diz2('Há sete meses que caçamos um pirata.',{x:.05,y:.3});
-  await segue(3.5,.6);
-  /* a página parte-se em vinhetas */
-  limpaCaixas();await anima(alvo,{x:.5,y:.5,z:1},.8);vivo(m);
-  madeira(1);tremor=.4;
+  await diz2('Doze dias numa ilha à espera de vento.');
+  await diz2('Há sete meses que caçamos um pirata.');
+  /* página 2 · pormenores: a lanterna, um rosto, as mãos */
+  madeira(1);tremor=.3;
   montaVinhetas([
-    {r:[0,0,.3,1],mundo:M_TEMP,parte:true,cam1:{x:.11,y:.42,z:2.9},dur:10},
-    {r:[.3,0,.7,.56],mundo:M_TEMP,parte:true,cam1:{x:.62,y:.3,z:1.7},dur:10},
-    {r:[.3,.56,.7,.44],mundo:M_TEMP,parte:true,cam1:{x:.5,y:.6,z:2},dur:10}],{papel:true,parte:true,base:{x:.5,y:.5,z:1}});
+    {r:[0,0,.28,1],mundo:M_TEMP,cam0:{x:.065,y:.3,z:3.4},cam1:{x:.065,y:.31,z:3.9},dur:12,ent:'cima'},
+    {r:[.28,0,.72,.52],mundo:M_TEMP,cam0:{x:.16,y:.47,z:3.6},cam1:{x:.16,y:.49,z:4.2},dur:12,ent:'dir',atraso:.5},
+    {r:[.28,.52,.72,.48],mundo:M_TEMP,cam0:{x:.25,y:.64,z:3.6},cam1:{x:.28,y:.66,z:4.1},dur:12,ent:'baixo',atraso:1}],{papel:true});
+  await espera(1.4);vivo(m);
+  await diz2('Roubou tudo ao nosso capitão.');
+  await diz2('Os homens estão fartos.');
+  /* página 3 · lá fora: o junco ao lado e o relâmpago */
+  montaVinhetas([
+    {r:[0,0,.62,1],mundo:M_TEMP,cam0:{x:.74,y:.6,z:2.6},cam1:{x:.75,y:.62,z:3},dur:10,ent:'esq'},
+    {r:[.62,0,.38,1],mundo:M_TEMP,cam0:{x:.62,y:.28,z:2.4},cam1:{x:.62,y:.3,z:2.8},dur:10,ent:'dir',atraso:.6}],{papel:true});
   await espera(1.2);vivo(m);
-  await diz2('Roubou tudo ao nosso capitão.',{x:.33,y:.12});
-  await diz2('Ninguém sabe onde está.',{dir:.03,y:.61});
-  await diz2('Os homens estão fartos.',{x:.025,y:.82});
-  await segue(3,.6);
-  /* página 2 · o relâmpago */
-  limpaCaixas();vinhetas=null;Object.assign(cam,novaCam({x:.64,y:.34,z:2.3}));alvo=novaCam({x:.62,y:.36,z:1.9});
+  await diz2('Ninguém sabe onde está.');
+  /* o relâmpago enche o ecrã */
+  vinhetas=null;Object.assign(cam,novaCam({x:.64,y:.34,z:2.3}));alvo=novaCam({x:.62,y:.36,z:1.9});
   raio(1.6);tremor=1.3;balanco=1;
   await espera(.5);vivo(m);
-  await diz2('Esta noite, isso deixa de importar.',{centro:true,y:.72,forte:true,bum:.9,dur:3});
-  limpaCaixas();raio(1.8);tremor=1.6;flash(1);await espera(.25);vivo(m);
+  await diz2('Esta noite, isso deixa de importar.',forte({dur:3}));
+  raio(1.8);tremor=1.6;flash(1);await espera(.25);vivo(m);
 };
 C1.prepara=function(){proxRaio=T+4;V.agua=0;this.maosDy=0;this.maosTremor=0};
 
